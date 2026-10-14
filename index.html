@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Math Notebook">
+<meta name="theme-color" content="#fdf5fb">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 7 L62 36 L93 38 L69 58 L77 89 L50 72 L23 89 L31 58 L7 38 L38 36 Z' fill='%23ffcf4d' stroke='%233a2850' stroke-width='5' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>Daily Math Notebook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: a sticker-book page on dotted paper. Home (greeting, today card, topics, stamp calendar) → question + scratch paper side by side → results */
+:root{
+  --paper:#fdf5fb; --dots:#efd9ea; --card:#ffffff; --ink:#3a2850; --muted:#7a6890; --line:#eedff0;
+  --violet:#8657f0; --violet-soft:#f0eaff; --berry:#e2508f; --berry-soft:#ffe6f1;
+  --gold:#ffcf4d; --gold-ink:#5e4200; --mint:#22a888; --mint-soft:#dcf5ee;
+  --bad:#d6456a; --bad-soft:#fde6ed; --shadow:#f3dcec;
+  --btn-a:#e2508f; --btn-b:#8657f0; --btn-shadow:#b23b74;
+  --t-mul:#ffe1ee; --t-div:#ebe3ff; --t-frac:#dcf5ee; --t-geo:#fff0c7; --t-word:#ddefff; --t-think:#ffe8da;
+  --f-display:"Fredoka","Trebuchet MS",system-ui,sans-serif;
+  --f-body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#1b1325; --dots:#2b2039; --card:#251a31; --ink:#f4eaff; --muted:#bba8cf; --line:#3a2b4a;
+  --violet:#b39aff; --violet-soft:#33274b; --berry:#ff86b9; --berry-soft:#47223a;
+  --gold:#f5c443; --gold-ink:#3a2900; --mint:#5fdbb7; --mint-soft:#173a31;
+  --bad:#ff8aa6; --bad-soft:#45202d; --shadow:#120b19;
+  --btn-a:#d4427f; --btn-b:#7448e6; --btn-shadow:#0d0812;
+  --t-mul:#4a2238; --t-div:#33284f; --t-frac:#173a31; --t-geo:#43381a; --t-word:#1d3247; --t-think:#45301f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#1b1325; --dots:#2b2039; --card:#251a31; --ink:#f4eaff; --muted:#bba8cf; --line:#3a2b4a;
+  --violet:#b39aff; --violet-soft:#33274b; --berry:#ff86b9; --berry-soft:#47223a;
+  --gold:#f5c443; --gold-ink:#3a2900; --mint:#5fdbb7; --mint-soft:#173a31;
+  --bad:#ff8aa6; --bad-soft:#45202d; --shadow:#120b19;
+  --btn-a:#d4427f; --btn-b:#7448e6; --btn-shadow:#0d0812;
+  --t-mul:#4a2238; --t-div:#33284f; --t-frac:#173a31; --t-geo:#43381a; --t-word:#1d3247; --t-think:#45301f; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.5;
+  background-image:radial-gradient(var(--dots) 1.6px,transparent 1.8px);background-size:22px 22px;
+  padding-inline:16px;padding-block:18px 48px;min-height:100%}
+.wrap{max-width:660px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance}
+button{font:inherit;cursor:pointer;color:inherit}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--violet);outline-offset:2px}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:24px;box-shadow:0 7px 0 var(--shadow)}
+
+/* header + mascot */
+.hero{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.mascot{width:74px;height:74px;flex:none;animation:bob 3.2s ease-in-out infinite}
+.m-star{fill:var(--gold);stroke:var(--ink);stroke-width:3.5}
+.m-eye{fill:var(--ink)} .m-blush{fill:var(--berry);opacity:.45}
+.m-mouth{fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+@keyframes bob{50%{transform:translateY(-5px) rotate(-4deg)}}
+.hero-text{flex:1;min-width:0}
+.hi{font-family:var(--f-display);font-weight:600;color:var(--berry);font-size:1.15rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hi button{background:none;border:none;color:var(--muted);font-size:.8rem;text-decoration:underline;padding:0}
+.hero h1{font-size:2rem;line-height:1.1;font-weight:700}
+.hero h1 span{color:var(--violet)}
+.date{color:var(--muted);font-size:.95rem}
+.streak{font-family:var(--f-display);font-weight:600;background:var(--gold);color:var(--gold-ink);border-radius:999px;padding:6px 14px;white-space:nowrap;box-shadow:0 3px 0 var(--shadow)}
+.bubble{position:relative;background:var(--card);border:2px solid var(--line);border-radius:18px;padding:10px 14px;font-weight:700;color:var(--ink);margin:0}
+.namebox{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:14px 16px}
+.namebox label{font-weight:800}
+.namebox input{font:inherit;font-size:1.05rem;padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);min-width:0;flex:1 1 140px}
+
+/* today card */
+.today{padding:22px;display:flex;flex-direction:column;gap:14px;background:linear-gradient(160deg,var(--berry-soft),var(--violet-soft))}
+.today h2{font-size:1.5rem}
+.mixline{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:.85rem;font-weight:700;background:var(--card);border-radius:999px;padding:3px 11px;color:var(--muted)}
+.btn{font-family:var(--f-display);font-weight:600;font-size:1.15rem;border:none;border-radius:999px;padding:12px 26px;color:#fff;
+  background:linear-gradient(135deg,var(--btn-a),var(--btn-b));box-shadow:0 4px 0 var(--btn-shadow);transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--btn-shadow)}
+.btn.ghost{background:var(--card);color:var(--ink);border:2px solid var(--line);box-shadow:0 3px 0 var(--shadow)}
+.btn.small{font-size:1rem;padding:8px 16px}
+.btn[disabled]{opacity:.5}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.timeset{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.timeset span{font-weight:800;font-size:.95rem}
+.seg{display:inline-flex;background:var(--card);border-radius:999px;padding:3px;gap:2px}
+.seg button{border:none;background:none;font-weight:800;padding:6px 12px;min-height:36px;border-radius:999px}
+.seg button[aria-pressed="true"]{background:var(--violet);color:var(--card)}
+
+/* topics */
+.section-label{font-family:var(--f-display);font-size:1.15rem;font-weight:600;margin-bottom:10px}
+.topics{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.topic{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:14px;text-align:left;display:flex;gap:12px;align-items:center;box-shadow:0 4px 0 var(--shadow);min-width:0}
+.topic:hover{border-color:var(--berry)}
+.ticon{width:46px;height:46px;flex:none;border-radius:14px;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:1.5rem}
+.topic b{font-family:var(--f-display);font-weight:600;font-size:1.08rem;display:block}
+.topic small{color:var(--muted);font-size:.84rem;display:block;line-height:1.3}
+
+/* stamp calendar */
+.calbox{padding:20px;display:flex;flex-direction:column;gap:14px}
+.calbox h2{font-size:1.35rem}
+.calstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat{border-radius:16px;padding:10px 12px;display:flex;flex-direction:column}
+.stat:nth-child(1){background:var(--berry-soft)} .stat:nth-child(2){background:var(--t-geo)} .stat:nth-child(3){background:var(--violet-soft)}
+.bignum{font-family:var(--f-display);font-weight:700;font-size:2.2rem;line-height:1}
+.stat small{color:var(--muted);font-size:.8rem;font-weight:700}
+.todaynote{font-weight:800;border-radius:14px;padding:9px 13px;font-size:.95rem}
+.todaynote.yes{background:var(--mint-soft);color:var(--mint)}
+.todaynote.no{background:var(--violet-soft);color:var(--violet)}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal .wd{text-align:center;font-size:.75rem;font-weight:800;color:var(--muted)}
+.cd{aspect-ratio:1;max-width:100%;border:1.5px dashed var(--line);border-radius:12px;position:relative;display:grid;place-items:center}
+.cd .dn{position:absolute;top:2px;left:6px;font-size:.68rem;color:var(--muted);font-weight:700}
+.cd .stamp{font-size:1.45rem;line-height:1}
+.cd.done{background:var(--berry-soft);border:1.5px solid var(--berry)} .cd.done .stamp{color:var(--berry)}
+.cd.star{background:var(--gold);border:1.5px solid var(--gold)} .cd.star .stamp,.cd.star .dn{color:var(--gold-ink)}
+.cd.star .stamp,.cd.done .stamp{animation:pop .5s ease-out}
+@keyframes pop{0%{transform:scale(.4)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.cd.now{outline:2.5px solid var(--violet);outline-offset:1px}
+.cd.fut{opacity:.45}
+.loglegend{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:.82rem;font-weight:700}
+.parent{font-size:.85rem;color:var(--muted);border-top:2px dashed var(--line);padding-top:12px}
+
+/* quiz */
+.wrap.wide{max-width:1180px}
+.qtop{display:flex;align-items:center;gap:12px}
+.back{background:none;border:none;color:var(--muted);font-weight:700;padding:4px 0;text-decoration:underline}
+.bar{flex:1;height:14px;background:var(--card);border:2px solid var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--btn-a),var(--btn-b));border-radius:99px;transition:width .3s}
+.count{font-family:var(--f-display);font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.clock{font-family:var(--f-num);font-weight:700;font-size:1rem;background:var(--card);border:2px solid var(--line);border-radius:999px;padding:3px 11px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.clock.warn{color:var(--bad);border-color:var(--bad);background:var(--bad-soft)}
+.quiz{display:grid;gap:20px;align-items:start}
+.qcol{display:flex;flex-direction:column;gap:18px;min-width:0}
+.card{padding:22px;display:flex;flex-direction:column;gap:18px;min-width:0;position:relative}
+.tag{align-self:flex-start;font-size:.8rem;font-weight:800;padding:4px 12px;border-radius:999px;color:var(--ink)}
+.ask{margin:0;font-size:1.15rem;font-weight:700}
+.word{font-size:1.15rem;line-height:1.65;margin:0}
+.big{font-family:var(--f-num);font-size:2rem;font-weight:700;display:flex;align-items:center;flex-wrap:wrap;gap:.3em}
+.col{font-family:var(--f-num);font-weight:700;font-size:2.3rem;display:inline-grid;justify-items:end;line-height:1.25;align-self:center;font-variant-numeric:tabular-nums}
+.col>div:last-child{border-bottom:3px solid var(--ink);padding-left:.2em}
+.col .op{margin-right:.5em;color:var(--berry)}
+.ldiv{font-family:var(--f-num);font-weight:700;font-size:2.3rem;display:inline-flex;align-items:stretch;align-self:center;margin-top:6px}
+.dvs{padding:.12em .2em 0 0;color:var(--violet)}
+.dvd{border-top:3px solid var(--ink);border-left:3px solid var(--ink);border-top-left-radius:6px 36px;padding:.1em .25em 0 .35em;letter-spacing:.06em}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 .12em;line-height:1.1}
+.fr>span:first-child{border-bottom:.09em solid currentColor;padding:0 .2em .06em}
+.fr>span:last-child{padding-top:.06em}
+.mixed{display:inline-flex;align-items:center}
+.whole{margin-right:.08em}
+.word .fr{font-size:.85em;font-family:var(--f-num);font-weight:700}
+.blank{color:var(--berry)}
+.geo{width:100%;max-width:380px;height:auto;align-self:center;overflow:visible}
+.g-line{stroke:var(--ink);stroke-width:3.5;fill:none;stroke-linecap:round}
+.g-line2{stroke:var(--violet);stroke-width:3.5;fill:none;stroke-linecap:round}
+.g-ray{stroke:var(--berry);stroke-width:3.5;stroke-linecap:round}
+.g-arc{stroke:var(--berry);stroke-width:3;fill:none}
+.g-arc2{stroke:var(--violet);stroke-width:3;fill:none;stroke-dasharray:5 4}
+.g-right{stroke:var(--berry);stroke-width:2.5;fill:none}
+.g-dot{fill:var(--ink)}
+.g-fill{fill:var(--violet-soft);stroke:var(--ink);stroke-width:3;stroke-linejoin:round}
+.g-dash{stroke:var(--violet);stroke-width:2.5;stroke-dasharray:6 5}
+.g-prot{fill:var(--t-geo);stroke:var(--muted);stroke-width:1.5}
+.g-tick{stroke:var(--muted);stroke-width:1.5}
+.g-txt{fill:var(--ink);font:700 15px var(--f-num)}
+.g-small{fill:var(--muted);font:700 11px var(--f-num)}
+.g-lbl{fill:var(--berry);font:700 17px var(--f-num)}
+.g-lbl2{fill:var(--violet);font:700 18px var(--f-num)}
+
+.answer{display:flex;align-items:center;flex-wrap:wrap;gap:10px;border-top:2px dashed var(--line);padding-top:16px}
+.answer label{font-weight:700;color:var(--muted);font-size:.95rem}
+input.n{font-family:var(--f-num);font-weight:700;font-size:1.6rem;width:5.6em;max-width:100%;padding:6px 10px;border:2.5px solid var(--line);border-radius:14px;background:var(--paper);color:var(--ink);text-align:center}
+input.n:focus{border-color:var(--violet)}
+input.n.s{width:3.2em;font-size:1.4rem;padding:4px 6px}
+input.n.ok{border-color:var(--mint);background:var(--mint-soft)}
+input.n.no{border-color:var(--bad);background:var(--bad-soft)}
+.fin{display:inline-flex;align-items:center;gap:8px}
+.fstack{display:flex;flex-direction:column;align-items:center;gap:5px}
+.fstack .rule{height:3px;width:100%;background:var(--ink);border-radius:2px}
+.unit{font-weight:800;font-size:1.15rem}
+.cmpbtns,.choices{display:flex;gap:10px;flex-wrap:wrap}
+.cmpbtns button{font-family:var(--f-num);font-weight:700;font-size:1.8rem;width:64px;height:58px;border:2.5px solid var(--line);border-radius:16px;background:var(--paper)}
+.choices button{font-family:var(--f-display);font-weight:600;font-size:1.1rem;padding:10px 18px;border:2.5px solid var(--line);border-radius:999px;background:var(--paper)}
+.cmpbtns button[aria-pressed="true"],.choices button[aria-pressed="true"]{background:var(--violet);border-color:var(--violet);color:var(--card)}
+.slot{display:inline-grid;place-items:center;min-width:1.4em;height:1.4em;border:2.5px dashed var(--berry);border-radius:10px;color:var(--berry)}
+textarea{font:inherit;font-size:1.05rem;width:100%;min-height:96px;padding:10px 12px;border:2.5px solid var(--line);border-radius:14px;background:var(--paper);color:var(--ink);resize:vertical}
+
+.fb{border-radius:18px;padding:14px 16px;font-size:1rem;line-height:1.7}
+.fb.good{background:var(--mint-soft)} .fb.bad{background:var(--bad-soft)} .fb.try{background:var(--violet-soft)}
+.fb h3{font-size:1.2rem;margin-bottom:4px}
+.fb.good h3{color:var(--mint)} .fb.bad h3{color:var(--bad)} .fb.try h3{color:var(--violet)}
+.fb .work{overflow-x:auto}
+.fb .work .fr{font-size:.95em;font-family:var(--f-num);font-weight:700}
+.fb .work>div+div{margin-top:4px}
+.wk{display:inline-grid;grid-template-columns:max-content auto;column-gap:16px;font-family:var(--f-num);font-size:1.2rem;margin:6px 0 8px;line-height:1.45;background:var(--card);border-radius:12px;padding:8px 14px}
+.wk .v{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;white-space:pre}
+.wk .nt{color:var(--muted);font-family:var(--f-body);font-size:.88rem;align-self:center}
+.wk .ln{border-top:2.5px solid var(--ink);margin:3px 0}
+.wk .tot{color:var(--berry)}
+.wk .carry{color:var(--violet);opacity:.8}
+.chk{color:var(--muted)}
+.nudge{color:var(--bad);font-weight:800;font-size:.95rem;margin:0}
+
+/* scratch paper */
+.scratch{padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.stool{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.stool .ttl{font-family:var(--f-display);font-weight:600;margin:0 auto 0 6px}
+.tool{border:2px solid var(--line);background:var(--paper);border-radius:999px;padding:6px 12px;font-weight:800;font-size:.92rem;display:inline-flex;align-items:center;gap:6px;min-height:40px}
+.tool[aria-pressed="true"]{border-color:var(--violet);background:var(--violet-soft)}
+.tool .dot{width:14px;height:14px;border-radius:50%;display:inline-block}
+#pad{width:100%;height:clamp(340px,62vh,720px);display:block;border-radius:16px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair;
+  background-color:var(--paper);background-image:linear-gradient(var(--dots) 1px,transparent 1px),linear-gradient(90deg,var(--dots) 1px,transparent 1px);background-size:28px 28px}
+.padnote{font-size:.8rem;color:var(--muted);margin:0 6px}
+@media (min-width:860px){.quiz{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.scratch{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}}
+
+/* confetti */
+.confetti{position:absolute;left:50%;top:40%;width:0;height:0;pointer-events:none;z-index:5}
+.confetti i{position:absolute;width:9px;height:14px;border-radius:3px;animation:burst 1s ease-out forwards}
+@keyframes burst{from{transform:translate(0,0) rotate(0);opacity:1}to{transform:translate(var(--x),var(--y)) rotate(var(--r));opacity:0}}
+
+/* results */
+.results{padding:24px;display:flex;flex-direction:column;gap:14px}
+.rtop{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.score{font-family:var(--f-display);font-size:3.6rem;font-weight:700;line-height:1;color:var(--berry)}
+.score small{font-size:1.4rem;color:var(--muted)}
+.timesup{font-family:var(--f-display);font-weight:600;color:var(--bad)}
+.rlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.ritem{display:flex;gap:8px;align-items:center;border-radius:14px;padding:8px 10px;font-size:.9rem;font-weight:700;min-width:0;background:var(--paper)}
+.ritem .m{font-weight:800;width:1.6em;text-align:center;font-size:1.1rem}
+.ritem.first .m{color:var(--gold-ink);background:var(--gold);border-radius:50%}
+.ritem.second .m{color:var(--violet)} .ritem.miss .m,.ritem.skip .m{color:var(--bad)}
+.key{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:.85rem;font-weight:700}
+@media (max-width:440px){.col,.ldiv{font-size:1.9rem}.big{font-size:1.6rem}.card,.today,.calbox,.results{padding:18px}.hero h1{font-size:1.7rem}.mascot{width:60px;height:60px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
+</head>
+<body>
+
+
+<div class="wrap" id="app"></div>
+
+<script>
+(function(){
+const app=document.getElementById('app');
+const fmt=n=>n.toLocaleString('en-CA');
+const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
+function rng(seed){let a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function hash(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+let R=Math.random;
+const ri=(a,b)=>a+Math.floor(R()*(b-a+1));
+const pick=a=>a[Math.floor(R()*a.length)];
+const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+/* ---------- display helpers ---------- */
+const F=(n,d,w)=>`<span class="mixed">${w?`<span class="whole">${w}</span>`:''}<span class="fr"><span>${n}</span><span>${d}</span></span></span>`;
+function Fs(n,d){const g=gcd(n,d);n/=g;d/=g;if(d===1)return `${n}`;const w=Math.floor(n/d),r=n%d;return w?F(r,d,w):F(n,d)}
+const col=(a,b)=>`<div class="col"><div>${a}</div><div><span class="op">×</span>${b}</div></div>`;
+const ldiv=(n,d)=>`<div class="ldiv"><span class="dvs">${d}</span><span class="dvd">${n}</span></div>`;
+function ldSteps(n,d){const s=String(n);let cur=0,out=[],started=false,step=1;
+  for(let i=0;i<s.length;i++){cur=cur*10+ +s[i];const q=Math.floor(cur/d);
+    if(!started&&q===0&&i<s.length-1){out.push(`${d} does not fit into ${cur}, so include the next digit.`);continue}
+    started=true;const rem=cur-q*d;
+    const next=i<s.length-1?` Bring down the ${s[i+1]} → <b>${rem*10+ +s[i+1]}</b>.`:'';
+    out.push(`<b>Step ${step++}:</b> ${cur} ÷ ${d} = <b>${q}</b> (write ${q} on top). ${q} × ${d} = ${q*d}. ${cur} − ${q*d} = ${rem}.${next}`);cur=rem}
+  return out.map(x=>`<div>${x}</div>`).join('')}
+// column working: rows are [value, note], 'line' or ['total', value, note]
+function wk(rows){return `<div class="wk">${rows.map(r=>r==='line'?'<div class="ln"></div><div></div>':
+  `<div class="v ${r[2]==='tot'?'tot':''}">${r[0]}</div><div class="nt">${r[1]||''}</div>`).join('')}</div>`}
+
+/* ---------- generators ---------- */
+const PLACE=['ones','tens','hundreds','thousands'];
+// standard algorithm: one line per digit, right to left, with carrying
+function carry(a,b){const ds=String(a).split('').reverse().map(Number);let c=0;const lines=[],cs=[];
+  ds.forEach((d,i)=>{const p=d*b+c,last=i===ds.length-1,w=p%10,nc=Math.floor(p/10);
+    lines.push(`<div><b>${PLACE[i][0].toUpperCase()+PLACE[i].slice(1)}:</b> ${d} × ${b}${c?` + ${c} carried`:''} = ${p}. ${last?`Write <b>${p}</b>.`:`Write <b>${w}</b>${nc?`, carry <b>${nc}</b>`:''}.`}</div>`);
+    cs.push(last?0:nc);c=nc});
+  const n=ds.length;let row='';for(let pos=n-1;pos>=0;pos--){const fromRight=pos-1;row+=fromRight>=0&&cs[fromRight]?cs[fromRight]:' '}
+  return {lines:lines.join(''),row}}
+function mul1(){const a=ri(102,989),b=ri(3,9),k=carry(a,b);
+  return {topic:'mul',kind:'int',ans:a*b,q:`<p class="ask">Multiply.</p>${col(a,b)}`,
+    hint:`Start with the ones: ${a%10} × ${b}. Write the ones digit and carry the tens. Add the carried number after the next multiplication.`,
+    sol:`<div>Start at the ones and move left. Add any carried number after you multiply.</div>${k.lines}`+
+      wk([...(k.row.trim()?[[k.row,'carried','carry']]:[]),[String(a),''],[`× ${b}`,''],'line',[String(a*b),'answer','tot']])}}
+function mul2(){const a=ri(104,799);let b=ri(12,68);if(b%10===0)b++;
+  const t=Math.floor(b/10)*10,o=b%10,td=t/10,k1=carry(a,o),k2=carry(a,td);
+  return {topic:'mul',kind:'int',ans:a*b,q:`<p class="ask">Multiply.</p>${col(a,b)}`,
+    hint:`Row 1: multiply ${a} by ${o}. Row 2: write a 0 in the ones place first, then multiply ${a} by ${td}. Then add the two rows.`,
+    sol:`<div><b>Row 1:</b> multiply ${a} by the ones digit, ${o}.</div>${k1.lines}<div>Row 1 = <b>${a*o}</b></div>`+
+      `<div style="margin-top:8px"><b>Row 2:</b> the ${td} means ${td} tens, so write a <b>0</b> in the ones place first. Then multiply ${a} by ${td}.</div>${k2.lines}<div>Row 2 = <b>${a*t}</b></div>`+
+      `<div style="margin-top:8px"><b>Add</b> the two rows.</div>`+
+      wk([[String(a),''],[`× ${b}`,''],'line',[String(a*o),'row 1'],[String(a*t),'row 2 (0 first)'],'line',[String(a*b),'answer','tot']])}}
+function mkDiv(n,d,q,r){const two=d>9;
+  const mult=two?`<div>Multiples of ${d}: ${Array.from({length:9},(_,i)=>d*(i+1)).join(', ')}</div>`:'';
+  return {topic:'div',kind:'divR',ans:[q,r],q:`<p class="ask">Divide. If nothing is left over, the remainder is 0.</p>${ldiv(n,d)}`,
+    hint:two?`Write the multiples of ${d} on your scratch paper first (${d}, ${2*d}, ${3*d}, …). Then divide, multiply, subtract, bring down.`:`Work left to right: divide, multiply, subtract, bring down. The remainder must be smaller than ${d}.`,
+    sol:`<div>Long division: divide, multiply, subtract, bring down.</div>${mult}${ldSteps(n,d)}<div>${r?`${r} is left and it is smaller than ${d}, so it is the remainder.`:'Nothing is left, so the remainder is 0.'}</div><div>So ${n} ÷ ${d} = <b>${q}${r?` R ${r}`:''}</b></div><div class="chk">Check: ${q} × ${d}${r?` + ${r}`:''} = ${n} ✓</div>`}}
+// 4-digit ÷ 1-digit
+function divA(){const d=ri(3,9);let q,r,n;do{q=ri(Math.ceil(1000/d),Math.floor(9999/d));r=R()<.45?0:ri(1,d-1);n=q*d+r}while(n>9999||n<1000);return mkDiv(n,d,q,r)}
+// 3-digit ÷ 2-digit (Grade 5 level)
+function divB(){const d=ri(11,29);let q,r,n;do{q=ri(Math.ceil(100/d),Math.min(45,Math.floor(999/d)));r=R()<.35?0:ri(1,d-1);n=q*d+r}while(n>999||n<100);return mkDiv(n,d,q,r)}
+function div(){return R()<.4?divA():divB()}
+
+const fracTypes=['equiv','addSame','subSame','addRel','subRel','simplify','toMixed','toImproper','cmp','of'];
+function frac(type){type=type||pick(fracTypes);let d,n,k,a,b,D,w,r,N,m;
+  switch(type){
+  case 'equiv':d=ri(2,9);n=ri(1,d-1);k=ri(2,6);
+    return {topic:'frac',kind:'int',ans:n*k,q:`<p class="ask">Fill in the missing number.</p><div class="big">${F(n,d)} = <span class="fr"><span class="blank">?</span><span>${d*k}</span></span></div>`,
+      hint:`What do you multiply ${d} by to get ${d*k}? Do the same to the top.`,
+      sol:`${d} × ${k} = ${d*k}, so ${n} × ${k} = <b>${n*k}</b>`};
+  case 'addSame':d=ri(3,12);a=ri(1,d-1);b=ri(1,d-1);
+    return {topic:'frac',kind:'frac',ans:[a+b,d],q:`<p class="ask">Add. Give your answer in simplest form.</p><div class="big">${F(a,d)} + ${F(b,d)} =</div>`,
+      hint:`The bottoms match, so add only the tops. Keep the bottom number.`,
+      sol:`${a} + ${b} = ${a+b}, keep the ${d}: ${F(a+b,d)}${Fs(a+b,d)!==F(a+b,d)?` = <b>${Fs(a+b,d)}</b>`:''}`};
+  case 'subSame':d=ri(3,12);a=ri(2,d-1);b=ri(1,a-1);
+    return {topic:'frac',kind:'frac',ans:[a-b,d],q:`<p class="ask">Subtract. Give your answer in simplest form.</p><div class="big">${F(a,d)} − ${F(b,d)} =</div>`,
+      hint:`The bottoms match, so subtract only the tops.`,
+      sol:`${a} − ${b} = ${a-b}, keep the ${d}: ${F(a-b,d)}${Fs(a-b,d)!==F(a-b,d)?` = <b>${Fs(a-b,d)}</b>`:''}`};
+  case 'addRel':d=pick([2,3,4,5,6]);k=pick([2,3]);D=d*k;a=ri(1,d-1);b=ri(1,D-1);
+    return {topic:'frac',kind:'frac',ans:[a*k+b,D],q:`<p class="ask">Add. Give your answer in simplest form.</p><div class="big">${F(a,d)} + ${F(b,D)} =</div>`,
+      hint:`Change ${F(a,d)} so its bottom is ${D} first.`,
+      sol:`${F(a,d)} = ${F(a*k,D)} (× ${k} top and bottom)<br>${F(a*k,D)} + ${F(b,D)} = ${F(a*k+b,D)} = <b>${Fs(a*k+b,D)}</b>`};
+  case 'subRel':d=pick([2,3,4,5,6]);k=pick([2,3]);D=d*k;a=ri(1,d-1);b=ri(1,a*k-1);
+    return {topic:'frac',kind:'frac',ans:[a*k-b,D],q:`<p class="ask">Subtract. Give your answer in simplest form.</p><div class="big">${F(a,d)} − ${F(b,D)} =</div>`,
+      hint:`Change ${F(a,d)} so its bottom is ${D} first.`,
+      sol:`${F(a,d)} = ${F(a*k,D)}<br>${F(a*k,D)} − ${F(b,D)} = ${F(a*k-b,D)} = <b>${Fs(a*k-b,D)}</b>`};
+  case 'simplify':do{d=ri(3,10);n=ri(1,d-1)}while(gcd(n,d)!==1);k=ri(2,6);
+    return {topic:'frac',kind:'frac',ans:[n,d],simplest:true,noWhole:true,q:`<p class="ask">Write in simplest form.</p><div class="big">${F(n*k,d*k)} =</div>`,
+      hint:`Find a number that divides both ${n*k} and ${d*k}.`,
+      sol:`Divide top and bottom by ${k}: ${n*k} ÷ ${k} = ${n}, ${d*k} ÷ ${k} = ${d} → <b>${F(n,d)}</b>`};
+  case 'toMixed':d=ri(2,9);w=ri(1,5);r=ri(1,d-1);N=w*d+r;
+    return {topic:'frac',kind:'frac',ans:[N,d],mixed:true,q:`<p class="ask">Write as a mixed number.</p><div class="big">${F(N,d)} =</div>`,
+      hint:`How many groups of ${d} fit into ${N}? What is left over?`,
+      sol:`${N} ÷ ${d} = ${w} R ${r}, so <b>${Fs(N,d)}</b>`};
+  case 'toImproper':d=ri(2,9);w=ri(1,6);r=ri(1,d-1);N=w*d+r;
+    return {topic:'frac',kind:'int',ans:N,q:`<p class="ask">Write as an improper fraction.</p><div class="big">${F(r,d,w)} = <span class="fr"><span class="blank">?</span><span>${d}</span></span></div>`,
+      hint:`Multiply the whole number by ${d}, then add the top.`,
+      sol:`${w} × ${d} = ${w*d}, ${w*d} + ${r} = <b>${N}</b>, so ${F(N,d)}`};
+  case 'cmp':{let b1=ri(2,9),d2=ri(2,9);while(d2===b1)d2=ri(2,9);let a1=ri(1,b1-1),c=ri(1,d2-1);
+    if(R()<.2){const kk=pick([2,3]);d2=b1*kk;c=a1*kk}
+    const L=a1*d2,Rt=c*b1,ans=L>Rt?'>':L<Rt?'<':'=';
+    return {topic:'frac',kind:'cmp',ans,fa:F(a1,b1),fb:F(c,d2),q:`<p class="ask">Compare. Choose &lt;, &gt; or =.</p><div class="big">${F(a1,b1)} <span class="slot" id="slot">?</span> ${F(c,d2)}</div>`,
+      hint:`Give both fractions the same bottom number, then compare the tops.`,
+      sol:`Same bottom ${b1*d2}: ${F(a1,b1)} = ${F(L,b1*d2)} and ${F(c,d2)} = ${F(Rt,b1*d2)}<br>${L} ${ans} ${Rt}, so <b>${F(a1,b1)} ${ans} ${F(c,d2)}</b>`}}
+  case 'of':d=pick([2,3,4,5,6,8,10]);n=ri(1,d-1);m=d*ri(3,12);
+    return {topic:'frac',kind:'int',ans:m/d*n,q:`<p class="ask">Find the amount.</p><div class="big">${F(n,d)} of ${m} =</div>`,
+      hint:`First find ${F(1,d)} of ${m} by dividing by ${d}.`,
+      sol:`${m} ÷ ${d} = ${m/d}<br>${m/d} × ${n} = <b>${m/d*n}</b>`};
+  }}
+
+const words=[
+ ()=>{const l=ri(125,489),d=pick([5,6,7,8]);return {kind:'int',ans:l*d,unit:'litres',
+   q:`A maple farm in Québec collects <b>${l}</b> litres of sap each day. How many litres does it collect in <b>${d}</b> days?`,
+   hint:`Same amount every day, so multiply.`,sol:`${l} × ${d} = <b>${fmt(l*d)}</b> litres`}},
+ ()=>{const cap=pick([24,36,48]);let s;do{s=ri(cap*3+1,cap*8-1)}while(s%cap===0);const b=Math.ceil(s/cap);
+   return {kind:'int',ans:b,unit:'buses',q:`<b>${s}</b> students are going on a field trip to the science centre. Each bus holds <b>${cap}</b> students. How many buses are needed so everyone can go?`,
+   hint:`Divide, then think: what happens to the students who are left over?`,
+   sol:`${cap} × ${b-1} = ${cap*(b-1)}, which leaves ${s-cap*(b-1)} students with no seat.<br>${cap} × ${b} = ${cap*b}, enough for everyone → <b>${b}</b> buses`}},
+ ()=>{const f=pick([3,4,6,7,8]),e=ri(21,99),t=f*e;return {kind:'int',ans:e,unit:'cards',
+   q:`Liam has <b>${t}</b> hockey cards. He shares them equally among <b>${f}</b> friends. How many cards does each friend get?`,
+   hint:`Sharing equally means dividing.`,sol:`${t} ÷ ${f} = <b>${e}</b> cards each<br><span class="chk">Check: ${e} × ${f} = ${t} ✓</span>`}},
+ ()=>{const bx=pick([6,8]);let n;do{n=ri(110,320)}while(n%bx===0);return {kind:'divR',ans:[Math.floor(n/bx),n%bx],labels:['full boxes','left over'],
+   q:`The bake sale has <b>${n}</b> muffins. They go into boxes of <b>${bx}</b>. How many boxes can be filled, and how many muffins are left over?`,
+   hint:`Divide by ${bx}. The remainder is the muffins left over.`,
+   sol:`${n} ÷ ${bx} = ${Math.floor(n/bx)} R ${n%bx}<br><b>${Math.floor(n/bx)}</b> full boxes, <b>${n%bx}</b> muffins left over`}},
+ ()=>{const b=ri(105,325),p=pick([12,24,36]);return {kind:'int',ans:b*p,unit:'pencils',
+   q:`A school orders <b>${b}</b> boxes of pencils. Each box has <b>${p}</b> pencils. How many pencils is that?`,
+   hint:`${b} groups of ${p} → multiply.`,sol:`${b} × ${p % 10} = ${fmt(b*(p%10))}<br>${b} × ${p-p%10} = ${fmt(b*(p-p%10))}<br>Total: <b>${fmt(b*p)}</b> pencils`}},
+ ()=>{const a=ri(1,4),c=ri(1,3);return {kind:'frac',ans:[a+c,8],
+   q:`A pizza is cut into 8 equal slices. Maya eats ${F(a,8)} of the pizza and her brother eats ${F(c,8)}. What fraction of the pizza did they eat altogether?`,
+   hint:`Same bottom numbers, so add the tops.`,sol:`${F(a,8)} + ${F(c,8)} = ${F(a+c,8)}${gcd(a+c,8)>1?` = <b>${Fs(a+c,8)}</b>`:''}`}},
+ ()=>{const d=pick([3,4,5,6]),n=ri(1,d-1),km=d*ri(3,9);return {kind:'int',ans:km/d*n,unit:'km',
+   q:`A hiking trail in Banff is <b>${km} km</b> long. Ava has walked ${F(n,d)} of it. How many kilometres has she walked?`,
+   hint:`Find ${F(1,d)} of ${km} first.`,sol:`${km} ÷ ${d} = ${km/d}<br>${km/d} × ${n} = <b>${km/d*n}</b> km`}},
+ ()=>{const t=ri(126,389),p=pick([12,14,15,18,23]);return {kind:'int',ans:t*p,pre:'$',
+   q:`A theatre sold <b>${t}</b> tickets at <b>$${p}</b> each. How much money did the theatre collect?`,
+   hint:`Multiply the number of tickets by the price.`,sol:`${t} × ${p} = <b>$${fmt(t*p)}</b>`}},
+ ()=>{const d=pick([6,8,10,12]);const a=ri(3,d-1),b=ri(1,a-1);return {kind:'frac',ans:[a-b,d],unit:'m',
+   q:`Noah has ${F(a,d)} m of ribbon. He uses ${F(b,d)} m for a gift. How much ribbon is left?`,
+   hint:`Take away: subtract the tops, keep the bottom.`,sol:`${F(a,d)} − ${F(b,d)} = ${F(a-b,d)}${gcd(a-b,d)>1?` = <b>${Fs(a-b,d)}</b>`:''} m`}},
+ ()=>{const s=ri(4,9),b=ri(112,198);return {kind:'int',ans:s*b,unit:'books',q:`The school library has <b>${s}</b> shelves. Each shelf holds <b>${b}</b> books. How many books can the shelves hold?`,hint:`${s} shelves with ${b} books on each → multiply.`,sol:`${b} × ${s} = <b>${fmt(s*b)}</b> books`}},
+ ()=>{const n=ri(21,32),c=ri(12,19);return {kind:'int',ans:n*c,pre:'$',q:`<b>${n}</b> students are going to the museum. Each ticket costs <b>$${c}</b>. What is the total cost?`,hint:`Multiply the number of students by the ticket price.`,sol:`${n} × ${c} = <b>$${fmt(n*c)}</b>`}},
+ ()=>{let n;do{n=ri(130,400)}while(n%12===0);const q=Math.floor(n/12);return {kind:'divR',ans:[q,n%12],labels:['full cartons','eggs left'],q:`A farm collects <b>${n}</b> eggs. Eggs are packed in cartons of <b>12</b>. How many cartons can be filled, and how many eggs are left over?`,hint:`Divide by 12. Your 12 times table helps.`,sol:`${ldSteps(n,12)}<div><b>${q}</b> full cartons, <b>${n%12}</b> eggs left over</div><div class="chk">Check: ${q} × 12 + ${n%12} = ${n} ✓</div>`}},
+ ()=>{const x=ri(12,25),w=ri(12,30);return {kind:'int',ans:x*w,pre:'$',q:`Zoe saves <b>$${x}</b> every week. How much has she saved after <b>${w}</b> weeks?`,hint:`The same amount every week → multiply.`,sol:`${x} × ${w} = <b>$${fmt(x*w)}</b>`}},
+ ()=>{const d=pick([6,7,8,9]);let p;do{p=ri(120,300)}while(p%d===0);const days=Math.ceil(p/d);return {kind:'int',ans:days,unit:'days',q:`A book has <b>${p}</b> pages. Ethan reads <b>${d}</b> pages a day. How many days will it take him to finish the whole book?`,hint:`Divide. If some pages are left over, he needs one more day.`,sol:`${p} ÷ ${d} = ${Math.floor(p/d)} R ${p%d}<br>After ${Math.floor(p/d)} days, ${p%d} pages are still left, so he needs one more day → <b>${days}</b> days`}},
+ ()=>{const r=ri(12,25),p=ri(14,28);return {kind:'int',ans:r*p,unit:'plants',q:`A community garden has <b>${r}</b> rows with <b>${p}</b> tomato plants in each row. How many tomato plants are there?`,hint:`Rows × plants in each row.`,sol:`${r} × ${p} = <b>${fmt(r*p)}</b> plants`}},
+ ()=>{const d=pick([7,8,9]);let n;do{n=ri(100,250)}while(n%d===0);return {kind:'divR',ans:[Math.floor(n/d),n%d],labels:['each player','left over'],q:`A soccer coach brings <b>${n}</b> orange slices for a team of <b>${d}</b> players. Each player gets the same number. How many slices does each player get, and how many are left over?`,hint:`Sharing equally → divide by ${d}.`,sol:`${ldSteps(n,d)}<div><b>${Math.floor(n/d)}</b> slices each, <b>${n%d}</b> left over</div>`}},
+ ()=>{const d=pick([3,4,5,6]),e=ri(24,48),km=d*e;return {kind:'int',ans:e,unit:'km',q:`A family paddles <b>${km} km</b> on a <b>${d}</b>-day canoe trip in Algonquin Park. They paddle the same distance each day. How far do they paddle each day?`,hint:`Split the total into ${d} equal parts → divide.`,sol:`${ldSteps(km,d)}<div>${km} ÷ ${d} = <b>${e}</b> km each day</div><div class="chk">Check: ${e} × ${d} = ${km} ✓</div>`}},
+ ()=>{const d=pick([3,4,5,6]),n=ri(1,d-1),c=d*ri(4,7);return {kind:'int',ans:c/d*n,unit:'students',q:`There are <b>${c}</b> students in the class. ${F(n,d)} of them walk to school. How many students walk?`,hint:`Find ${F(1,d)} of ${c} first.`,sol:`${c} ÷ ${d} = ${c/d}<br>${c/d} × ${n} = <b>${c/d*n}</b> students`}},
+ ()=>{const d=pick([5,6,8,10,12]),a=ri(1,d-1);return {kind:'frac',ans:[d-a,d],q:`Emma ate ${F(a,d)} of a cake. What fraction of the cake is left?`,hint:`The whole cake is ${F(d,d)}. Take away what she ate.`,sol:`The whole cake = ${F(d,d)}<br>${F(d,d)} − ${F(a,d)} = <b>${F(d-a,d)}</b>${gcd(d-a,d)>1?` = <b>${Fs(d-a,d)}</b>`:''}`}},
+ ()=>{const a=ri(1,5),b=ri(1,4);return {kind:'frac',ans:[a+b,10],unit:'cm',q:`It rained ${F(a,10)} cm on Monday and ${F(b,10)} cm on Tuesday. How much rain fell on the two days altogether?`,hint:`Same bottom numbers → add the tops.`,sol:`${F(a,10)} + ${F(b,10)} = <b>${F(a+b,10)}</b>${gcd(a+b,10)>1?` = <b>${Fs(a+b,10)}</b>`:''} cm`}},
+ ()=>{const d=pick([2,3,4]),D=d*2,a=ri(1,d-1),b=ri(1,D-1);return {kind:'frac',ans:[a*2+b,D],unit:'L',q:`Ben drinks ${F(a,d)} L of milk and ${F(b,D)} L of water. How many litres does he drink altogether?`,hint:`Change ${F(a,d)} into ${D}ths first.`,sol:`${F(a,d)} = ${F(a*2,D)} (× 2 top and bottom)<br>${F(a*2,D)} + ${F(b,D)} = ${F(a*2+b,D)} = <b>${Fs(a*2+b,D)}</b> L`}},
+ ()=>{const d=pick([2,3,4]),k=pick([2,3]),D=d*k,b=ri(1,d-1),a=ri(b*k+1,D-1);return {kind:'frac',ans:[a-b*k,D],q:`There was ${F(a,D)} of a can of paint. Olivia used ${F(b,d)} of the can. How much of the can is left?`,hint:`Change ${F(b,d)} into ${D}ths first.`,sol:`${F(b,d)} = ${F(b*k,D)} (× ${k} top and bottom)<br>${F(a,D)} − ${F(b*k,D)} = ${F(a-b*k,D)} = <b>${Fs(a-b*k,D)}</b>`}},
+ ()=>{const d=pick([2,3,4]),w=ri(2,4),r=ri(1,d-1),N=w*d+r;return {kind:'int',ans:N,unit:'scoops',q:`A recipe needs ${F(r,d,w)} cups of flour. Jack only has a ${F(1,d)} cup scoop. How many scoops does he need?`,hint:`Each whole cup is ${d} scoops.`,sol:`${w} cups = ${w} × ${d} = ${w*d} scoops<br>${F(r,d)} cup = ${r} more scoop${r>1?'s':''}<br>${w*d} + ${r} = <b>${N}</b> scoops`}},
+ ()=>{const d=pick([6,8]),w=ri(1,3),r=ri(1,d-1),N=w*d+r;return {kind:'frac',ans:[N,d],mixed:true,unit:'pizzas',q:`After the party, <b>${N}</b> slices of pizza are left. Each pizza was cut into <b>${d}</b> slices. Write the leftover pizza as a mixed number.`,hint:`How many full pizzas do ${N} slices make? What is left?`,sol:`${N} ÷ ${d} = ${w} R ${r}<br>${w} whole pizza${w>1?'s':''} and ${r} of ${d} slices → <b>${Fs(N,d)}</b> pizzas`}},
+ ()=>{const r=ri(18,36),s=ri(22,45);return {kind:'int',ans:r*s,unit:'seats',q:`One section of a hockey arena has <b>${r}</b> rows with <b>${s}</b> seats in each row. How many seats are in the section?`,hint:`Rows × seats in each row.`,sol:`${r} × ${s} = <b>${fmt(r*s)}</b> seats`}},
+ ()=>{const n=ri(45,98),m=ri(30,75);return {kind:'int',ans:2*n+3*m,pre:'$',q:`At the bake sale, cookies cost <b>$2</b> and brownies cost <b>$3</b>. The class sold <b>${n}</b> cookies and <b>${m}</b> brownies. How much money did they make?`,hint:`Two steps: find the money for each, then add.`,sol:`Cookies: ${n} × 2 = $${2*n}<br>Brownies: ${m} × 3 = $${3*m}<br>Total: ${2*n} + ${3*m} = <b>$${fmt(2*n+3*m)}</b>`}},
+ ()=>{const x=ri(18,31);return {kind:'int',ans:100-3*x,pre:'$',q:`Sophie buys <b>3</b> hoodies for <b>$${x}</b> each. She pays with a <b>$100</b> bill. How much change does she get?`,hint:`Find the total cost first, then subtract it from $100.`,sol:`3 × ${x} = $${3*x}<br>100 − ${3*x} = <b>$${100-3*x}</b>`}},
+ ()=>{const m=ri(25,45),d=ri(12,28);return {kind:'int',ans:m*d,unit:'minutes',q:`Hana practises piano for <b>${m}</b> minutes every day. How many minutes does she practise in <b>${d}</b> days?`,hint:`The same time every day → multiply.`,sol:`${m} × ${d} = <b>${fmt(m*d)}</b> minutes`}},
+ ()=>{const c=pick([6,8,9]);let n;do{n=ri(100,280)}while(n%c===0);const p=Math.ceil(n/c);return {kind:'int',ans:p,unit:'pages',q:`Each page of Owen's sticker book holds <b>${c}</b> stickers. He has <b>${n}</b> stickers. How many pages does he need for all of them?`,hint:`Divide, then think about the stickers left over.`,sol:`${n} ÷ ${c} = ${Math.floor(n/c)} R ${n%c}<br>The ${n%c} extra stickers need one more page → <b>${p}</b> pages`}},
+ ()=>{const x=ri(112,245),k=pick([3,4,5]);return {kind:'int',ans:x*k,unit:'cans',q:`For the food drive, Grade 4 collected <b>${x}</b> cans. Grade 5 collected <b>${k} times</b> as many. How many cans did Grade 5 collect?`,hint:`"${k} times as many" means multiply by ${k}.`,sol:`${x} × ${k} = <b>${fmt(x*k)}</b> cans`}},
+ ()=>{const d=pick([4,5,10]),n=ri(1,d-1),m=d*ri(6,15);return {kind:'int',ans:m/d*n,pre:'$',q:`Leo has <b>$${m}</b>. He spends ${F(n,d)} of it on a new game. How much does the game cost?`,hint:`Find ${F(1,d)} of $${m} first.`,sol:`${m} ÷ ${d} = ${m/d}<br>${m/d} × ${n} = <b>$${m/d*n}</b>`}},
+ ()=>{let n;do{n=ri(100,250)}while(n%6===0);return {kind:'int',ans:Math.floor(n/6),unit:'bags',q:`Grandma baked <b>${n}</b> cookies. She puts <b>6</b> cookies in each gift bag. How many bags can she <b>fill completely</b>?`,hint:`Divide by 6. Do the leftover cookies fill a whole bag?`,sol:`${n} ÷ 6 = ${Math.floor(n/6)} R ${n%6}<br>The ${n%6} leftover cookies are not enough for another full bag → <b>${Math.floor(n/6)}</b> bags`}},
+ ()=>{const r=ri(14,26),c=ri(24,32);return {kind:'int',ans:r*c,unit:'chairs',q:`A school has <b>${r}</b> classrooms. Each classroom has <b>${c}</b> chairs. How many chairs are there?`,hint:`Classrooms × chairs in each.`,sol:`${r} × ${c} = <b>${fmt(r*c)}</b> chairs`}},
+ ()=>{const a=ri(1,3),b=ri(1,2*a-1);return {kind:'frac',ans:[2*a-b,8],unit:'km',q:`Ali ran ${F(a,4)} km. Bea ran ${F(b,8)} km. How much farther did Ali run than Bea?`,hint:`Change ${F(a,4)} into eighths, then subtract.`,sol:`${F(a,4)} = ${F(2*a,8)}<br>${F(2*a,8)} − ${F(b,8)} = <b>${F(2*a-b,8)}</b>${gcd(2*a-b,8)>1?` = <b>${Fs(2*a-b,8)}</b>`:''} km`}},
+ ()=>{const w=ri(105,190),d=pick([5,6,7]);return {kind:'int',ans:w*d,unit:'km',q:`A truck driver drives <b>${w} km</b> each day on the Trans-Canada Highway. How far does she drive in <b>${d}</b> days?`,hint:`The same distance every day → multiply.`,sol:`${w} × ${d} = <b>${fmt(w*d)}</b> km`}},
+ ()=>{const n=ri(3,8),p=ri(115,180);return {kind:'int',ans:n*p,pre:'$',q:`A family buys <b>${n}</b> season passes for the ski hill. Each pass costs <b>$${p}</b>. How much do they pay?`,hint:`Number of passes × price of one pass.`,sol:`${p} × ${n} = <b>$${fmt(n*p)}</b>`}},
+ ()=>{const t=pick([3,4,5,6]),e=ri(28,60),n=t*e;return {kind:'int',ans:e,unit:'pieces',q:`<b>${t}</b> friends work on a <b>${n}</b>-piece puzzle. Each friend puts in the same number of pieces. How many pieces does each friend put in?`,hint:`Share ${n} equally among ${t} → divide.`,sol:`${ldSteps(n,t)}<div>${n} ÷ ${t} = <b>${e}</b> pieces each</div>`}}
+];
+function word(i){const g=i==null?pick(words):words[i];const q=g();q.topic='word';q.q=`<p class="word">${q.q}</p>`;return q}
+
+/* explain-your-thinking (open response, self-checked against a model answer) */
+const thinks=[
+ ()=>{let b=pick([2,3,4,5,6]),d=pick([2,3,4,5,6]);while(d===b)d=pick([3,4,5,6,8]);
+   return {q:`Sam says ${F(1,b)} + ${F(1,d)} = ${F(2,b+d)}. Is Sam right? Explain how you know.`,
+   sol:`<div><b>No.</b> You can't add the bottom numbers. The pieces are different sizes, so first make the same bottom number.</div><div>${F(1,b)} = ${F(d,b*d)} and ${F(1,d)} = ${F(b,b*d)}</div><div>${F(d,b*d)} + ${F(b,b*d)} = <b>${Fs(b+d,b*d)}</b></div><div class="chk">Another clue: ${F(1,b)} + ${F(1,d)} must be bigger than ${F(1,b)} alone, but ${F(2,b+d)} is smaller.</div>`}},
+ ()=>{const a=ri(213,486),b=pick([13,14,16,17,19]),o=b%10,t=b-o;
+   return {q:`Ava worked out ${a} × ${b} and got ${fmt(a*o+a)}. What mistake did she make? What is the right answer?`,
+   sol:`<div>Ava did ${a} × ${o} = ${fmt(a*o)} and then ${a} × 1 = ${a}. But the 1 in ${b} means <b>1 ten</b>. She forgot to write the 0 in the ones place first, so row 2 should be ${fmt(a*10)}, not ${a}.</div>`+
+     wk([[String(a),''],[`× ${b}`,''],'line',[String(a*o),'row 1'],[String(a*t),'row 2: 0 first, then × 1'],'line',[String(a*b),'right answer','tot']])}},
+ ()=>{let a;do{a=ri(310,690)}while(a%100<15||a%100>85);const b=ri(4,9),H=Math.ceil(a/100)*100;
+   return {q:`Without working it out exactly, is ${a} × ${b} more or less than ${fmt(H*b)}? Explain how you know.`,
+   sol:`<div><b>Less.</b> ${a} is less than ${H}. ${H} × ${b} = ${fmt(H*b)}. Since ${a} is smaller than ${H}, ${a} × ${b} must be smaller than ${fmt(H*b)}.</div><div class="chk">Exact answer: ${a} × ${b} = ${fmt(a*b)}</div>`}},
+ ()=>{const d=pick([4,5,6,7,8]);let q;let r;q=ri(21,60);r=ri(1,d-1);const n=q*d+r;const wrongR=r+d;
+   return {q:`Jay divided ${n} stickers among ${d} friends. He says each friend gets ${q-1} stickers with ${wrongR} left over. Is that the best answer? Explain.`,
+   sol:`<div><b>No.</b> ${wrongR} stickers are left, and that is enough to give each of the ${d} friends one more. A remainder must always be <b>smaller than</b> the number you divide by (${d}).</div><div>Right answer: ${n} ÷ ${d} = <b>${q} R ${r}</b>, so each friend gets ${q} and ${r} are left over.</div><div class="chk">Check: ${q} × ${d} + ${r} = ${n} ✓</div>`}},
+ ()=>{const n=pick([2,3,4,5]),a=n+ri(1,3),b=a+ri(2,4);
+   return {q:`Which is greater, ${F(n,a)} or ${F(n,b)}? Explain how you know without finding a common denominator.`,
+   sol:`<div><b>${F(n,a)} is greater.</b> Both have ${n} pieces. When a whole is cut into ${a} parts, each piece is bigger than when it is cut into ${b} parts. So ${n} bigger pieces is more than ${n} smaller pieces.</div>`}},
+ ()=>{const d=pick([3,4,6,8]),m=d*ri(4,12),n=ri(2,d-1);
+   return {q:`Explain two different ways to find ${F(n,d)} of ${m}. Then give the answer.`,
+   sol:`<div><b>Way 1:</b> ${m} ÷ ${d} = ${m/d}, then ${m/d} × ${n} = ${m/d*n}.</div><div><b>Way 2:</b> ${m} × ${n} = ${m*n}, then ${m*n} ÷ ${d} = ${m*n/d}.</div><div>Answer: <b>${m/d*n}</b>. A drawing works too: ${m} split into ${d} equal groups, then count ${n} of the groups.</div>`}},
+ ()=>{const d=ri(5,12),a=ri(1,d-2),b=ri(a+1,d-1);return {q:`Which is greater, ${F(a,d)} or ${F(b,d)}? Explain how you know.`,sol:`<div><b>${F(b,d)} is greater.</b> Both fractions cut the whole into ${d} equal pieces, so the pieces are the same size. ${b} pieces is more than ${a} pieces.</div>`}},
+ ()=>{const d=pick([6,8,10,12]);let n;do{n=ri(1,d-1)}while(n*2===d);const more=n*2>d;return {q:`Is ${F(n,d)} more or less than ${F(1,2)}? Explain how you know.`,sol:`<div><b>${more?'More':'Less'}.</b> Half of ${d} is ${d/2}, so ${F(1,2)} = ${F(d/2,d)}. ${n} is ${more?'more':'less'} than ${d/2}, so ${F(n,d)} is ${more?'more':'less'} than ${F(1,2)}.</div>`}},
+ ()=>{const d=ri(2,6),n=ri(1,d-1),k=ri(2,4),ok=R()<.5,D=ok?d*k:d*k+1;return {q:`Mia says ${F(n,d)} = ${F(n*k,D)}. Is she right? Explain.`,sol:ok?`<div><b>Yes.</b> Multiply the top and the bottom of ${F(n,d)} by ${k}: ${n} × ${k} = ${n*k} and ${d} × ${k} = ${D}. Doing the same thing to the top and bottom keeps the amount the same.</div>`:`<div><b>No.</b> An equivalent fraction multiplies the top and bottom by the same number. ${n} × ${k} = ${n*k}, so the bottom should be ${d} × ${k} = ${d*k}, not ${D}. So ${F(n,d)} = ${F(n*k,d*k)}.</div>`}},
+ ()=>{let n;do{n=ri(60,140)}while(n%8===0);const q=Math.floor(n/8);return {q:`${n} people are going to a hockey game. Each van holds 8 people. Lia says they need ${q} vans. Is she right? Explain.`,sol:`<div><b>No.</b> ${n} ÷ 8 = ${q} R ${n%8}. ${q} vans hold ${q*8} people, so ${n%8} people would have no seat. They need one more van: <b>${q+1}</b> vans.</div>`}},
+ ()=>{let n;do{n=ri(100,200)}while(n%6===0);const q=Math.floor(n/6),r=n%6;return {q:`${n} ÷ 6 = ${q} R ${r}. Explain what the answer should be for each question, and why.<br>(a) How many boxes of 6 are needed to pack all ${n} muffins?<br>(b) How many full boxes of 6 can be sold?`,sol:`<div><b>(a) ${q+1} boxes.</b> The ${r} extra muffins still need a box, so round up.</div><div><b>(b) ${q} boxes.</b> The ${r} extra muffins don't make a full box, so leave the remainder out.</div><div class="chk">The question tells you what to do with the remainder.</div>`}},
+ ()=>{const a=ri(112,489),b=ri(3,9);return {q:`How can you use division to check that ${a} × ${b} = ${fmt(a*b)}?`,sol:`<div>Multiplication and division undo each other. If ${a} × ${b} = ${fmt(a*b)}, then ${fmt(a*b)} ÷ ${b} should give ${a}.</div><div>${fmt(a*b)} ÷ ${b} = ${a} ✓, so the multiplication is correct.</div>`}},
+ ()=>{const a=ri(101,499),b=ri(3,9),even=(a*b)%2===0;return {q:`Without multiplying, will ${a} × ${b} be odd or even? Explain how you know.`,sol:`<div><b>${even?'Even':'Odd'}.</b> ${a} is ${a%2?'odd':'even'} and ${b} is ${b%2?'odd':'even'}. ${even?'If at least one number is even, the answer is even.':'Odd × odd is always odd.'}</div><div class="chk">Check: ${a} × ${b} = ${fmt(a*b)}</div>`}},
+ ()=>{const a=ri(112,489),b=ri(3,9),o=(a%10)*b;return {q:`Without solving the whole problem, what will the ones digit of ${a} × ${b} be? Explain.`,sol:`<div><b>${o%10}.</b> Only the ones digits decide the ones digit of the answer: ${a%10} × ${b} = ${o}, so the ones digit is ${o%10}. The other digits only make tens and hundreds.</div><div class="chk">Check: ${a} × ${b} = ${fmt(a*b)}</div>`}},
+ ()=>{const x=ri(2,9),y=ri(2,9);return {q:`Explain why ${x*10} × ${y*10} = ${fmt(x*y*100)}.`,sol:`<div>${x*10} is ${x} tens and ${y*10} is ${y} tens. ${x} × ${y} = ${x*y}. Tens × tens makes hundreds, so the answer is ${x*y} hundreds = <b>${fmt(x*y*100)}</b>. That is why there are two more zeros.</div>`}},
+ ()=>{const a=ri(213,689),b=ri(3,9);return {q:`Is ${b} × ${a} the same as ${a} × ${b}? Which way is easier to work out on paper, and why?`,sol:`<div><b>Yes, they are the same.</b> Changing the order doesn't change the answer: both equal ${fmt(a*b)}.</div><div>It is easier to write ${a} on top and ${b} underneath, so you only multiply by one digit.</div>`}},
+ ()=>{const d=ri(4,9),q=ri(Math.ceil(100/d),Math.floor(999/d)),n=q*d,say=R()<.5?q+pick([-2,-1,1,2]):q;return {q:`Noor says ${n} ÷ ${d} = ${say}. How can she check her answer without dividing again? Is she right?`,sol:`<div>She can multiply: her answer × ${d} should equal ${n}.</div><div>${say} × ${d} = ${say*d}. ${say===q?`That equals ${n}, so <b>she is right</b>.`:`That is not ${n}, so <b>she is not right</b>. The right answer is ${q}, because ${q} × ${d} = ${n}.`}</div>`}},
+ ()=>{const d=pick([6,8,12]),b=ri(15,35),n=b*d;return {q:`A farmer packs ${n} apples into bags of ${d}. To find how many bags she fills, would you multiply or divide? Explain, then solve.`,sol:`<div><b>Divide.</b> You know the total (${n}) and the size of each group (${d}). You are finding how many equal groups there are, so you divide.</div><div>${n} ÷ ${d} = <b>${b}</b> bags</div>`}},
+ ()=>{const d=pick([3,4,5,6]),w=ri(1,3),r=ri(1,d-1),N=w*d+r;return {q:`Explain why ${F(N,d)} is the same as ${F(r,d,w)}.`,sol:`<div>${d} pieces of ${F(1,d)} make 1 whole. ${N} pieces make ${w} whole${w>1?'s':''} (${w} × ${d} = ${w*d} pieces) with ${r} piece${r>1?'s':''} left over. So ${F(N,d)} = <b>${F(r,d,w)}</b>.</div>`}},
+ ()=>{const d=pick([5,6,8,9,10]),a=ri(3,d-1),b=ri(1,a-1);return {q:`Kai says ${F(a,d)} − ${F(b,d)} = ${F(a-b,0)}. What did he do wrong? What is the right answer?`,sol:`<div>Kai subtracted the bottom numbers too. The bottom number tells the size of the pieces. Taking pieces away doesn't change their size, so the bottom stays ${d}.</div><div>${F(a,d)} − ${F(b,d)} = <b>${F(a-b,d)}</b></div>`}},
+ ()=>{const [n,d]=pick([[1,2],[1,3],[2,3],[1,4],[3,4],[2,5]]),k=ri(2,3);return {q:`Is ${F(n*k,d*k)} the same amount as ${F(n,d)}? Use numbers or a drawing to explain.`,sol:`<div><b>Yes.</b> Divide the top and bottom of ${F(n*k,d*k)} by ${k}: ${n*k} ÷ ${k} = ${n} and ${d*k} ÷ ${k} = ${d}.</div><div>Drawing: cut a bar into ${d} parts and colour ${n}. Then cut every part into ${k} smaller parts. Now there are ${d*k} parts and ${n*k} are coloured, but the coloured amount didn't change.</div>`}},
+ ()=>{const a=ri(3,6),b=ri(a+2,12);return {q:`Lucas thinks ${F(1,b)} is bigger than ${F(1,a)} because ${b} is bigger than ${a}. Is he right? Explain.`,sol:`<div><b>No.</b> The bottom number tells how many pieces the whole is cut into. Cutting into ${b} pieces makes smaller pieces than cutting into ${a}. So ${F(1,a)} is bigger than ${F(1,b)}.</div>`}},
+ ()=>{const d=ri(3,9);const q=R()<.5?ri(55,68):ri(86,99),r=ri(0,d-1),n=q*d+r,near=q<75?50:100;return {q:`Is ${n} ÷ ${d} closer to 50 or to 100? Explain without dividing exactly.`,sol:`<div>${d} × 50 = ${d*50} and ${d} × 100 = ${d*100}. ${n} is closer to ${near===50?d*50:d*100}, so the answer is <b>closer to ${near}</b>.</div><div class="chk">Exact: ${n} ÷ ${d} = ${q}${r?` R ${r}`:''}</div>`}},
+ ()=>{const a=ri(102,987),b=ri(3,6),s=String(a);return {q:`One digit is missing: ${s[0]}▢${s[2]} × ${b} = ${fmt(a*b)}. What is the missing digit? Explain how you found it.`,sol:`<div>Use the opposite operation: ${fmt(a*b)} ÷ ${b} = ${a}. So the number is ${a} and the missing digit is <b>${s[1]}</b>.</div><div class="chk">Check: ${a} × ${b} = ${fmt(a*b)} ✓</div>`}},
+ ()=>{let b,p,c;do{b=ri(6,15);p=pick([12,24,36]);c=pick([3,4,6,8,9])}while((b*p)%c);return {q:`Explain the steps you would use, then solve:<br>A school buys ${b} boxes of markers with ${p} markers in each box. The markers are shared equally among ${c} classes. How many markers does each class get?`,sol:`<div><b>Step 1: multiply</b> to find the total: ${b} × ${p} = ${b*p} markers.</div><div><b>Step 2: divide</b> to share equally: ${b*p} ÷ ${c} = <b>${b*p/c}</b> markers for each class.</div>`}},
+ ()=>{let A,B;do{A=2*ri(12,40);B=3*ri(10,30)}while(A/2===B/3);const a=A/2,b=B/3;return {q:`Which is more: ${F(1,2)} of ${A} or ${F(1,3)} of ${B}? Explain.`,sol:`<div>${F(1,2)} of ${A}: ${A} ÷ 2 = ${a}.</div><div>${F(1,3)} of ${B}: ${B} ÷ 3 = ${b}.</div><div><b>${a>b?`${F(1,2)} of ${A}`:`${F(1,3)} of ${B}`} is more</b>, because ${Math.max(a,b)} is greater than ${Math.min(a,b)}.</div>`}},
+ ()=>{const a=pick([125,150,175,225,250,325]);return {q:`How can knowing ${a} × 4 = ${fmt(a*4)} help you work out ${a} × 8?`,sol:`<div>8 is double 4, so ${a} × 8 is double ${a} × 4.</div><div>${fmt(a*4)} × 2 = <b>${fmt(a*8)}</b></div>`}},
+ ()=>{let a,b,c1;do{a=ri(112,489);b=ri(4,9);c1=Math.floor((a%10)*b/10)}while(!c1);return {q:`Ella worked out ${a} × ${b} and got ${fmt(a*b-c1*10)}. She forgot one step. What did she forget? What is the right answer?`,sol:`<div>${a%10} × ${b} = ${(a%10)*b}, so she should write ${((a%10)*b)%10} and <b>carry ${c1}</b> to the tens. She forgot to add the carried ${c1} in the tens column, so her answer is ${c1*10} too small.</div>${wk([[carry(a,b).row,'carried','carry'],[String(a),''],[`× ${b}`,''],'line',[String(a*b),'right answer','tot']])}`}},
+ ()=>{const n=ri(3,8),p=ri(1,n-1);return {q:`${n} friends share ${p} pizza${p>1?'s':''} equally. How much pizza does each friend get? Explain.`,sol:`<div>Cut each pizza into ${n} equal slices. Each slice is ${F(1,n)} of a pizza. There are ${p} × ${n} = ${p*n} slices, so each friend gets ${p} slice${p>1?'s':''}.</div><div>Each friend gets <b>${F(p,n)}</b> of a pizza.</div>`}},
+ ()=>{const a=ri(3,6),b=ri(a+1,10);return {q:`Which is closer to 1 whole: ${F(a-1,a)} or ${F(b-1,b)}? Explain.`,sol:`<div>${F(a-1,a)} is ${F(1,a)} away from 1 whole. ${F(b-1,b)} is ${F(1,b)} away from 1 whole.</div><div>${F(1,b)} is a smaller piece than ${F(1,a)}, so <b>${F(b-1,b)} is closer to 1</b>.</div>`}},
+ ()=>{const [n,d]=pick([[1,2],[1,4],[3,4],[1,5],[2,5],[3,5],[4,5],[3,10],[7,10],[9,10]]),cm=100*n/d,t=cm+pick([-15,-5,5,15]);return {q:`A ribbon is ${F(n,d)} m long. Is it longer than ${t} cm? Explain.`,sol:`<div>1 m = 100 cm. ${F(1,d)} m = 100 ÷ ${d} = ${100/d} cm, so ${F(n,d)} m = ${100/d} × ${n} = ${cm} cm.</div><div>${cm} cm is ${cm>t?'more':'less'} than ${t} cm, so <b>${cm>t?'yes, it is longer':'no, it is shorter'}</b>.</div>`}},
+ ()=>({q:`Can a triangle have two right angles? Explain.`,sol:`<div><b>No.</b> The three angles of a triangle always add up to 180°. Two right angles already make 90° + 90° = 180°, so there would be 0° left for the third angle. That can't make a triangle.</div>`}),
+ ()=>{const x=ri(91,115);return {q:`Mia says an angle of ${x}° is acute because it is close to 90°. Is she right? Explain.`,sol:`<div><b>No.</b> An acute angle is <b>less than</b> 90°. ${x}° is more than 90° (and less than 180°), so it is an <b>obtuse</b> angle, even though it is close to a right angle.</div>`}},
+ ()=>{const b=ri(6,12),h=ri(3,7),s=h+ri(1,3);return {q:`A parallelogram has a base of ${b} cm, a slanted side of ${s} cm and a height of ${h} cm. Leo says the area is ${b} × ${s} = ${b*s} cm². Is he right? Explain.`,sol:`<div><b>No.</b> Area of a parallelogram = base × <b>height</b>. The height goes straight up from the base (at a right angle), not along the slanted side.</div><div>Area = ${b} × ${h} = <b>${b*h} cm²</b></div><div class="chk">If you cut off the triangle on one end and move it to the other end, the parallelogram becomes a ${b} by ${h} rectangle.</div>`}},
+ ()=>({q:`Is every square a rectangle? Is every rectangle a square? Explain.`,sol:`<div><b>Every square is a rectangle</b>, because a rectangle needs 4 right angles and opposite sides equal, and a square has both.</div><div><b>Not every rectangle is a square</b>, because a square also needs all 4 sides the same length. A 3 cm by 5 cm rectangle is not a square.</div>`}),
+ ()=>{const l=ri(4,9),w=ri(2,l-1);return {q:`Two rectangles have the same perimeter: ${l} cm by ${w} cm and ${l+1} cm by ${w-1} cm. Do they have the same area? Explain.`,sol:`<div>Perimeters: 2 × (${l} + ${w}) = ${2*(l+w)} cm and 2 × (${l+1} + ${w-1}) = ${2*(l+w)} cm. They are the same.</div><div>Areas: ${l} × ${w} = ${l*w} cm² and ${l+1} × ${w-1} = ${(l+1)*(w-1)} cm². <b>The areas are different.</b> The same perimeter does not always mean the same area.</div>`}}
+];
+function think(i){const g=i==null?pick(thinks):thinks[i];const q=g();q.topic='think';q.kind='explain';q.q=`<p class="word">${q.q}</p>`;return q}
+
+/* ---------- geometry & angles (diagrams drawn in SVG, coloured from theme tokens) ---------- */
+const svg=(w,h,inner,label)=>`<svg class="geo" viewBox="0 0 ${w} ${h}" role="img" aria-label="${label||'diagram'}">${inner}</svg>`;
+const P=(cx,cy,r,deg)=>[+(cx+r*Math.cos(deg*Math.PI/180)).toFixed(1),+(cy-r*Math.sin(deg*Math.PI/180)).toFixed(1)];
+const ln=(a,b,c='g-line')=>`<line class="${c}" x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}"/>`;
+const tx=(p,s,c='g-txt',anchor='middle')=>`<text class="${c}" x="${p[0]}" y="${p[1]}" text-anchor="${anchor}" dominant-baseline="middle">${s}</text>`;
+function arc(cx,cy,r,a0,a1,c='g-arc'){const p0=P(cx,cy,r,a0),p1=P(cx,cy,r,a1);return `<path class="${c}" d="M${p0[0]} ${p0[1]} A${r} ${r} 0 ${a1-a0>180?1:0} 0 ${p1[0]} ${p1[1]}"/>`}
+function sq(cx,cy,a0,s=16){const a=P(cx,cy,s,a0),c=P(cx,cy,s*Math.SQRT2,a0+45),b=P(cx,cy,s,a0+90);return `<path class="g-right" d="M${a[0]} ${a[1]} L${c[0]} ${c[1]} L${b[0]} ${b[1]}"/>`}
+const dot=p=>`<circle class="g-dot" cx="${p[0]}" cy="${p[1]}" r="4"/>`;
+const GEO_TYPES=['angleType','protractor','straight','triangle','rightSplit','triSides','triAngles','rectArea','rectPerim','paraArea','triArea'];
+const ANGLE_DEF=`<div class="chk">Acute: less than 90°. Right: exactly 90°. Obtuse: between 90° and 180°. Straight: exactly 180°.</div>`;
+function geo(type){type=type||pick(GEO_TYPES);
+  switch(type){
+  case 'angleType':{const kind=pick(['Acute','Right','Obtuse','Straight','Acute','Obtuse']);
+    const A=kind==='Acute'?ri(3,16)*5:kind==='Right'?90:kind==='Obtuse'?ri(20,33)*5:180;
+    const V=[160,150];let g=ln(V,P(160,150,150,0))+ln(V,P(160,150,140,A));
+    g+=A===90?sq(160,150,0,20):arc(160,150,34,0,A);g+=dot(V);
+    return {topic:'geo',kind:'choice',opts:['Acute','Right','Obtuse','Straight'],ans:kind,
+      q:`<p class="ask">What kind of angle is this?</p>${svg(330,175,g,'an angle')}`,
+      hint:`Compare it with a right angle, like the corner of a page. Is it smaller, the same, bigger, or a straight line?`,
+      sol:`<div>This angle is ${A}°, so it is <b>${kind.toLowerCase()}</b>.</div>${ANGLE_DEF}`}}
+  case 'protractor':{const A=ri(2,16)*10,cx=170,cy=178,r=140;
+    let g=`<path class="g-prot" d="M${cx-r-6} ${cy} A${r+6} ${r+6} 0 0 1 ${cx+r+6} ${cy} Z"/>`;
+    for(let d=0;d<=180;d+=5){const big=d%10===0;g+=ln(P(cx,cy,r,d),P(cx,cy,r-(big?14:7),d),'g-tick');
+      if(d%10===0)g+=tx(P(cx,cy,r-27,d),d,'g-small')}
+    g+=ln([cx,cy],P(cx,cy,r+8,0),'g-ray')+ln([cx,cy],P(cx,cy,r+8,A),'g-ray')+dot([cx,cy]);
+    return {topic:'geo',kind:'int',ans:A,unit:'°',q:`<p class="ask">Read the protractor. How big is the angle between the two pink rays?</p>${svg(340,192,g,'a protractor measuring an angle')}`,
+      hint:`One ray sits on 0. Count up by tens from 0 to where the other ray crosses the numbers.`,
+      sol:`<div>One ray lines up with <b>0</b>. Follow the numbers from 0: 10, 20, 30… The other ray crosses at <b>${A}</b>.</div><div>The angle is <b>${A}°</b>. ${A<90?'It is less than 90°, so it is acute.':A===90?'It is a right angle.':'It is more than 90°, so it is obtuse.'}</div>`}}
+  case 'straight':{const a=ri(5,31)*5,cx=170,cy=130;
+    let g=ln([20,cy],[320,cy])+ln([cx,cy],P(cx,cy,125,a))+arc(cx,cy,34,0,a)+arc(cx,cy,26,a,180,'g-arc2')+dot([cx,cy]);
+    g+=tx(P(cx,cy,60,a/2),a+'°','g-lbl')+tx(P(cx,cy,52,(a+180)/2),'x','g-lbl2');
+    return {topic:'geo',kind:'int',ans:180-a,unit:'°',q:`<p class="ask">Find the missing angle <b>x</b>.</p>${svg(340,160,g,'two angles on a straight line')}`,
+      hint:`Angles on a straight line add up to 180°.`,
+      sol:`<div>Angles on a straight line add up to <b>180°</b>.</div><div>180 − ${a} = <b>${180-a}°</b></div>`}}
+  case 'triangle':{const a=ri(6,16)*5,b=ri(6,18)*5,c=180-a-b;if(c<20)return geo('triangle');
+    const A=[40,175],B=[300,175],C=[ri(120,220),28];
+    let g=`<path class="g-fill" d="M${A} L${B} L${C} Z"/>`+tx([A[0]+42,A[1]-16],a+'°','g-lbl')+tx([B[0]-42,B[1]-16],b+'°','g-lbl')+tx([C[0],C[1]+36],'x','g-lbl2');
+    return {topic:'geo',kind:'int',ans:c,unit:'°',q:`<p class="ask">Find the missing angle <b>x</b> in the triangle. (Not drawn to scale.)</p>${svg(340,195,g,'a triangle with two angles given')}`,
+      hint:`The three angles inside a triangle always add up to 180°.`,
+      sol:`<div>The angles in a triangle add up to <b>180°</b>.</div><div>${a} + ${b} = ${a+b}</div><div>180 − ${a+b} = <b>${c}°</b></div>`}}
+  case 'rightSplit':{const a=ri(3,15)*5,V=[70,175];
+    let g=ln(V,P(...V,190,0))+ln(V,P(...V,165,90))+ln(V,P(...V,175,a),'g-line2')+sq(...V,0,14)+arc(...V,52,0,a)+arc(...V,42,a,90,'g-arc2')+dot(V);
+    g+=tx(P(...V,82,a/2),a+'°','g-lbl')+tx(P(...V,70,(a+90)/2),'x','g-lbl2');
+    return {topic:'geo',kind:'int',ans:90-a,unit:'°',q:`<p class="ask">The whole corner is a right angle. Find <b>x</b>.</p>${svg(290,190,g,'a right angle split into two angles')}`,
+      hint:`The little square means the whole corner is 90°.`,
+      sol:`<div>The square mark means the whole corner is <b>90°</b>.</div><div>90 − ${a} = <b>${90-a}°</b></div>`}}
+  case 'triSides':{const kind=pick(['Equilateral','Isosceles','Scalene']);let s,pts;
+    if(kind==='Equilateral'){const x=ri(4,12);s=[x,x,x];pts=[[70,180],[250,180],[160,24]]}
+    else if(kind==='Isosceles'){const x=ri(6,12),y=ri(3,x+3);s=[y,x,x].map(Number);if(y===x)s[0]=x-2;pts=[[100,180],[220,180],[160,20]]}
+    else{let a,b,c;do{a=ri(5,14);b=ri(4,12);c=ri(3,11)}while(a===b||b===c||a===c||a>=b+c||b>=a+c||c>=a+b);s=[a,b,c];pts=[[40,180],[290,180],[110,40]]}
+    const [p0,p1,p2]=pts,mid=(u,v,dx,dy)=>[(u[0]+v[0])/2+dx,(u[1]+v[1])/2+dy];
+    let g=`<path class="g-fill" d="M${p0} L${p1} L${p2} Z"/>`+tx(mid(p0,p1,0,18),s[0]+' cm','g-lbl')+tx(mid(p1,p2,30,0),s[1]+' cm','g-lbl','start')+tx(mid(p2,p0,-30,0),s[2]+' cm','g-lbl','end');
+    const eq=new Set(s).size;
+    return {topic:'geo',kind:'choice',opts:['Equilateral','Isosceles','Scalene'],ans:kind,
+      q:`<p class="ask">Look at the side lengths. What kind of triangle is this?</p>${svg(330,205,g,'a triangle with side lengths')}`,
+      hint:`Count how many sides are the same length.`,
+      sol:`<div>The sides are ${s.join(' cm, ')} cm. ${eq===1?'All 3 sides are equal':eq===2?'Exactly 2 sides are equal':'No sides are equal'}, so it is <b>${kind.toLowerCase()}</b>.</div><div class="chk">Equilateral: 3 equal sides. Isosceles: 2 equal sides. Scalene: no equal sides.</div>`}}
+  case 'triAngles':{const kind=pick(['Acute','Right','Obtuse']);let t;
+    if(kind==='Right'){const a=ri(4,13)*5;t=[90,a,90-a]}
+    else if(kind==='Obtuse'){const o=ri(20,28)*5,a=ri(3,Math.floor((175-o)/5))*5;t=[o,a,180-o-a]}
+    else{let a,b;do{a=ri(10,17)*5;b=ri(10,17)*5}while(180-a-b>=90||180-a-b<=0);t=[a,b,180-a-b]}
+    t.sort(()=>R()-.5);
+    return {topic:'geo',kind:'choice',opts:['Acute triangle','Right triangle','Obtuse triangle'],ans:kind+' triangle',
+      q:`<p class="word">A triangle has angles of <b>${t[0]}°</b>, <b>${t[1]}°</b> and <b>${t[2]}°</b>. What kind of triangle is it?</p>`,
+      hint:`Look at the biggest angle. Is it less than 90°, exactly 90°, or more than 90°?`,
+      sol:`<div>The biggest angle is <b>${Math.max(...t)}°</b>. ${kind==='Right'?'One angle is exactly 90°':kind==='Obtuse'?'One angle is more than 90°':'All three angles are less than 90°'}, so it is a <b>${kind.toLowerCase()} triangle</b>.</div><div class="chk">Check: ${t.join(' + ')} = 180°</div>`}}
+  case 'rectArea':case 'rectPerim':{let l=ri(5,15),w=ri(3,12);if(w>=l)[l,w]=[w+1,l];
+    const sc=Math.min(250/l,120/w),W=l*sc,H=w*sc,x=(330-W)/2,y=20;
+    let g=`<rect class="g-fill" x="${x.toFixed(1)}" y="${y}" width="${W.toFixed(1)}" height="${H.toFixed(1)}" rx="2"/>`+tx([165,y+H+20],l+' cm','g-lbl')+tx([x-10,y+H/2],w+' cm','g-lbl','end');
+    const area=type==='rectArea';
+    return {topic:'geo',kind:'int',ans:area?l*w:2*(l+w),unit:area?'cm²':'cm',
+      q:`<p class="ask">Find the <b>${area?'area':'perimeter'}</b> of the rectangle.</p>${svg(330,y+H+38,g,'a rectangle')}`,
+      hint:area?`Area of a rectangle = length × width.`:`Perimeter is the distance all the way around: add all 4 sides.`,
+      sol:area?`<div>Area = length × width</div><div>${l} × ${w} = <b>${l*w} cm²</b></div>`:`<div>Perimeter = all 4 sides added together.</div><div>${l} + ${w} + ${l} + ${w} = <b>${2*(l+w)} cm</b></div><div class="chk">Shortcut: 2 × (${l} + ${w}) = ${2*(l+w)}</div>`}}
+  case 'paraArea':{const b=ri(5,14),h=ri(3,9),s=h+ri(1,3),off=55,bw=200,hh=110,x0=40,y0=25;
+    const A=[x0+off,y0],B=[x0+off+bw,y0],C=[x0+bw,y0+hh],D=[x0,y0+hh];
+    let g=`<path class="g-fill" d="M${A} L${B} L${C} L${D} Z"/>`+ln(A,[A[0],D[1]],'g-dash')+sq(A[0],D[1],0,10);
+    g+=tx([(D[0]+C[0])/2,D[1]+20],b+' cm','g-lbl')+tx([A[0]+8,(A[1]+D[1])/2],h+' cm','g-lbl2','start')+tx([(A[0]+D[0])/2-10,(A[1]+D[1])/2],s+' cm','g-small','end');
+    return {topic:'geo',kind:'int',ans:b*h,unit:'cm²',q:`<p class="ask">Find the area of the parallelogram. The dashed line is the height.</p>${svg(330,165,g,'a parallelogram with base, height and slanted side')}`,
+      hint:`Area of a parallelogram = base × height. The slanted side is not the height.`,
+      sol:`<div>Area of a parallelogram = <b>base × height</b> (use the dashed height, not the slanted ${s} cm side).</div><div>${b} × ${h} = <b>${b*h} cm²</b></div>`}}
+  case 'triArea':{let b=ri(4,14),h=ri(3,10);if((b*h)%2)b++;const x0=40,y0=170,bw=240,hh=135,apx=x0+ri(60,180);
+    const A=[x0,y0],B=[x0+bw,y0],C=[apx,y0-hh];
+    let g=`<path class="g-fill" d="M${A} L${B} L${C} Z"/>`+ln(C,[apx,y0],'g-dash')+sq(apx,y0,0,10)+tx([x0+bw/2,y0+20],b+' cm','g-lbl')+tx([apx+8,y0-hh/2],h+' cm','g-lbl2','start');
+    return {topic:'geo',kind:'int',ans:b*h/2,unit:'cm²',q:`<p class="ask">Find the area of the triangle. The dashed line is the height.</p>${svg(330,195,g,'a triangle with base and height')}`,
+      hint:`A triangle is half of a rectangle (or parallelogram). Area = base × height ÷ 2.`,
+      sol:`<div>Area of a triangle = <b>base × height ÷ 2</b>, because a triangle is half of a parallelogram with the same base and height.</div><div>${b} × ${h} = ${b*h}</div><div>${b*h} ÷ 2 = <b>${b*h/2} cm²</b></div>`}}
+  }}
+
+const TOPICS={mul:{name:'Multiplication',sub:'3-digit × 1-digit and 2-digit',icon:'×',color:'t-mul',make:()=>R()<.4?mul1():mul2()},
+  div:{name:'Division',sub:'4-digit ÷ 1-digit, 3-digit ÷ 2-digit',icon:'÷',color:'t-div',make:div},
+  frac:{name:'Fractions',sub:'add, subtract, compare, simplify',icon:'½',color:'t-frac',make:()=>frac()},
+  geo:{name:'Shapes & angles',sub:'angles, triangles, area',icon:'∠',color:'t-geo',make:()=>geo()},
+  word:{name:'Word problems',sub:'read, think, solve',icon:'✎',color:'t-word',make:()=>word()},
+  think:{name:'Explain your thinking',sub:'write why, then compare',icon:'?',color:'t-think',make:()=>think()}};
+
+// each list is walked in a fixed shuffled order, so every story is used once before any repeats
+function dayIndex(str){const [y,m,d]=str.split('-').map(Number);return Math.round(Date.UTC(y,m-1,d)/864e5)}
+function cycle(n,count,day,salt){const r=rng(hash('order-'+salt)),o=[...Array(n).keys()];
+  for(let i=n-1;i>0;i--){const j=Math.floor(r()*(i+1));[o[i],o[j]]=[o[j],o[i]]}
+  return Array.from({length:count},(_,k)=>o[(day*count+k)%n])}
+function dailySet(dateStr){R=rng(hash('daily-'+dateStr));const day=dayIndex(dateStr);
+  const set=[mul1(),mul2(),mul2(),divA(),divB(),divB(),
+    ...cycle(fracTypes.length,3,day,'frac').map(i=>frac(fracTypes[i])),
+    ...cycle(GEO_TYPES.length,3,day,'geo').map(i=>geo(GEO_TYPES[i])),
+    ...cycle(words.length,2,day,'word').map(i=>word(i)),
+    ...cycle(thinks.length,2,day,'think').map(i=>think(i))];
+  R=Math.random;return set}
+function topicSet(t){R=Math.random;const sh=a=>[...a].sort(()=>R()-.5);
+  if(t==='frac')return sh(fracTypes).map(x=>frac(x));
+  if(t==='geo')return sh(GEO_TYPES).slice(0,10).map(x=>geo(x));
+  if(t==='word')return sh([...words.keys()]).slice(0,8).map(i=>word(i));
+  if(t==='think')return sh([...thinks.keys()]).slice(0,8).map(i=>think(i));
+  return Array.from({length:10},()=>TOPICS[t].make())}
+
+/* ---------- storage (this device only) ---------- */
+function loadLog(){try{return JSON.parse(localStorage.getItem('mathLog')||'{}')}catch(e){return {}}}
+function saveLog(l){try{localStorage.setItem('mathLog',JSON.stringify(l))}catch(e){}}
+function getLimit(){try{const v=localStorage.getItem('mathTimer');return v==null?20:+v}catch(e){return 20}}
+function setLimit(v){try{localStorage.setItem('mathTimer',String(v))}catch(e){}}
+function getName(){try{return localStorage.getItem('mathName')||'Stella'}catch(e){return 'Stella'}}
+function setName(v){try{localStorage.setItem('mathName',v)}catch(e){}}
+const MASCOT=`<svg class="mascot" viewBox="0 0 100 100" aria-hidden="true"><path class="m-star" d="M50 7 L62 36 L93 38 L69 58 L77 89 L50 72 L23 89 L31 58 L7 38 L38 36 Z" stroke-linejoin="round"/><circle class="m-eye" cx="41" cy="50" r="4"/><circle class="m-eye" cx="59" cy="50" r="4"/><circle class="m-blush" cx="33" cy="59" r="5"/><circle class="m-blush" cx="67" cy="59" r="5"/><path class="m-mouth" d="M44 59 Q50 65 56 59"/></svg>`;
+const CHEERS=['Mistakes help your brain grow!','You get stronger every day you practise.','Take your time and show your thinking.','Small steps every day add up!','Hard questions are just puzzles to crack.','Believe in yourself. You can do this!','Every star on your calendar counts.'];
+const mmss=sec=>`${Math.floor(sec/60)}:${String(Math.max(0,sec)%60).padStart(2,'0')}`;
+function streak(log){let d=new Date(),n=0;if(!log[ymd(d)])d.setDate(d.getDate()-1);
+  while(log[ymd(d)]){n++;d.setDate(d.getDate()-1)}return n}
+
+/* ---------- home ---------- */
+function home(editName){stopClock();app.classList.remove('wide');const log=loadLog(),today=ymd(new Date()),done=log[today],s=streak(log),name=getName();
+  const now=new Date(),y=now.getFullYear(),mo=now.getMonth(),first=new Date(y,mo,1).getDay(),dim=new Date(y,mo+1,0).getDate();
+  let cells=['S','M','T','W','T','F','S'].map(w=>`<div class="wd">${w}</div>`).join('');for(let i=0;i<first;i++)cells+='<div></div>';
+  let monthCount=0;
+  for(let d=1;d<=dim;d++){const k=ymd(new Date(y,mo,d)),e=log[k],good=e&&e.c/e.t>=.8;if(e)monthCount++;
+    cells+=`<div class="cd ${e?(good?'star':'done'):''} ${d===now.getDate()?'now':''} ${d>now.getDate()?'fut':''}" title="${k}${e?`: ${e.c} out of ${e.t}`:''}"><span class="dn">${d}</span>${e?`<span class="stamp">${good?'★':'♥'}</span>`:''}</div>`}
+  const total=Object.keys(log).length,monthName=now.toLocaleDateString('en-CA',{month:'long'});
+  const cheer=CHEERS[dayIndex(today)%CHEERS.length];
+  const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  app.innerHTML=`
+  <header class="hero">${MASCOT}<div class="hero-text">
+      <div class="hi">${name&&!editName?`Hi, ${esc(name)}! <button id="chname">change name</button>`:'Hi there!'}</div>
+      <h1>Daily Math <span>Notebook</span></h1>
+      <div class="date">${now.toLocaleDateString('en-CA',{weekday:'long',month:'long',day:'numeric'})}</div></div>
+    <div class="streak">${s} day streak</div></header>
+  ${!name||editName?`<form class="panel namebox" id="nameform"><label for="nm">What's your name?</label><input id="nm" maxlength="20" autocomplete="off" value="${esc(name)}" placeholder="Type your name"><button class="btn small">Save</button></form>`:''}
+  <p class="bubble">${cheer}</p>
+  <section class="panel today">
+    <h2>${done?`Done today: ${done.c} out of ${done.t}. Amazing work!`:`Today's workout: 16 questions`}</h2>
+    <div class="mixline"><span class="chip">3 multiplication</span><span class="chip">3 division</span><span class="chip">3 fractions</span><span class="chip">3 shapes &amp; angles</span><span class="chip">2 word problems</span><span class="chip">2 explain</span></div>
+    <div class="timeset"><span>Time limit</span><div class="seg" id="seg">${[0,15,20,25].map(m=>`<button data-m="${m}" aria-pressed="${getLimit()===m}">${m?m+' min':'Off'}</button>`).join('')}</div></div>
+    <div class="btnrow"><button class="btn" id="startDaily">${done?'Do it again':'Start'}</button></div>
+  </section>
+  <section><div class="section-label">Extra practice</div>
+    <div class="topics">${Object.entries(TOPICS).map(([k,t])=>`<button class="topic" data-t="${k}"><span class="ticon" style="background:var(--${t.color})">${t.icon}</span><span><b>${t.name}</b><small>${t.sub}</small></span></button>`).join('')}</div></section>
+  <section class="panel calbox"><h2>My ${monthName} stamps</h2>
+    <div class="calstats"><div class="stat"><span class="bignum">${monthCount}</span><small>days in ${monthName}</small></div>
+      <div class="stat"><span class="bignum">${s}</span><small>days in a row</small></div>
+      <div class="stat"><span class="bignum">${total}</span><small>days in total</small></div></div>
+    <div class="todaynote ${done?'yes':'no'}">${done?`Today is done! ${s>1?`That makes ${s} days in a row.`:'Come back tomorrow to start a streak.'}`:(s?`Not yet today. Do today's workout to make it ${s+1} days in a row!`:`Not yet today. Start your streak now!`)}</div>
+    <div class="cal">${cells}</div>
+    <div class="loglegend"><span>♥ practised</span><span>★ 80% or more right</span></div></section>
+  <p class="parent">부모님께: 하루 16문제 (곱셈 3, 나눗셈 3, 분수 3, 도형·각도 3, 문장제 2, 서술형 2). 같은 날에는 같은 문제가 나오고, 문장제와 서술형은 모든 이야기를 한 번씩 다 쓴 뒤에야 다시 나와요. 기록은 이 기기의 브라우저에만 저장됩니다.</p>`;
+  const nf=document.getElementById('nameform');if(nf)nf.onsubmit=e=>{e.preventDefault();setName(document.getElementById('nm').value.trim());home()};
+  const cn=document.getElementById('chname');if(cn)cn.onclick=()=>home(true);
+  app.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{setLimit(+b.dataset.m);
+    app.querySelectorAll('#seg button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))});
+  document.getElementById('startDaily').onclick=()=>start(dailySet(today),'daily');
+  app.querySelectorAll('.topic').forEach(b=>b.onclick=()=>start(topicSet(b.dataset.t),b.dataset.t));
+}
+
+/* ---------- quiz ---------- */
+let S;
+let clockId=null;
+function stopClock(){if(clockId){clearInterval(clockId);clockId=null}}
+function start(qs,mode){stopClock();const m=getLimit();
+  // daily limit is for 16 questions; shorter sets get a proportional limit (at least 3 min)
+  const limit=m?Math.max(180,Math.round(m*60*qs.length/16/60)*60):0;
+  S={qs,mode,i:0,res:[],limit,t0:Date.now(),timeUp:false};show();tick();clockId=setInterval(tick,500)}
+function elapsed(){return Math.floor((Date.now()-S.t0)/1000)}
+function tick(){const el=document.getElementById('clock');const e=elapsed();
+  if(S.limit){const left=S.limit-e;if(el){el.textContent='⏱ '+mmss(Math.max(0,left));el.classList.toggle('warn',left<=60)}
+    if(left<=0)timesUp()}
+  else if(el)el.textContent='⏱ '+mmss(e)}
+function timesUp(){stopClock();S.timeUp=true;
+  if(S.res.length<=S.i&&S.i<S.qs.length)S.res.push({q:S.qs[S.i],r:'skip'});
+  for(let j=S.i+1;j<S.qs.length;j++)S.res.push({q:S.qs[j],r:'skip'});
+  results()}
+function answerUI(q){
+  if(q.kind==='int')return `${q.pre?`<span class="unit">${q.pre}</span>`:''}<input class="n" id="a1" inputmode="numeric" autocomplete="off" aria-label="Answer">${q.unit?`<span class="unit">${q.unit}</span>`:''}`;
+  if(q.kind==='divR'){const L=q.labels||['Answer','R'];return `<input class="n" id="a1" inputmode="numeric" autocomplete="off" aria-label="${L[0]}"><label for="a1">${q.labels?L[0]:''}</label><label for="a2">${q.labels?'':'R'}</label><input class="n s" id="a2" inputmode="numeric" autocomplete="off" aria-label="${L[1]}">${q.labels?`<label for="a2">${L[1]}</label>`:''}`}
+  if(q.kind==='frac')return `<div class="fin">${q.noWhole?'':`<input class="n s" id="aw" inputmode="numeric" autocomplete="off" aria-label="Whole number">`}
+    <div class="fstack"><input class="n s" id="an" inputmode="numeric" autocomplete="off" aria-label="Numerator (top)"><div class="rule"></div><input class="n s" id="ad" inputmode="numeric" autocomplete="off" aria-label="Denominator (bottom)"></div></div>
+    ${q.unit?`<span class="unit">${q.unit}</span>`:''}<label style="flex-basis:100%;font-weight:400;font-size:.85rem">${q.noWhole?'Top and bottom.':'Use the left box for a whole number if you need one.'}</label>`;
+  if(q.kind==='explain')return `<label for="ax" style="flex-basis:100%;font-weight:400">Write your explanation on the scratch paper, or type it here. Use numbers, words or a drawing.</label><textarea id="ax" aria-label="Your explanation"></textarea>`;
+  if(q.kind==='choice')return `<div class="choices">${q.opts.map(o=>`<button type="button" data-c="${o}" aria-pressed="false">${o}</button>`).join('')}</div>`;
+  if(q.kind==='cmp')return `<div class="cmpbtns">${['<','=','>'].map(s=>`<button type="button" data-c="${s}" aria-pressed="false">${s}</button>`).join('')}</div>`}
+function show(){const q=S.qs[S.i],t=S.qs.length;S.tries=0;S.locked=false;S.revealed=false;app.classList.add('wide');
+  app.innerHTML=`
+  <div class="qtop"><button class="back" id="quit">Home</button><div class="bar"><i style="width:${S.i/t*100}%"></i></div><span class="count">${S.i+1}/${t}</span><span class="clock" id="clock">⏱</span></div>
+  <div class="quiz"><div class="qcol">
+  <section class="panel card"><div class="tag" style="background:var(--${TOPICS[q.topic].color})">${TOPICS[q.topic].icon}&nbsp; ${TOPICS[q.topic].name}</div>${q.q}
+    <div class="answer" id="ans">${answerUI(q)}</div><p class="nudge" id="nudge" hidden></p><div id="fb"></div></section>
+  <div class="btnrow"><button class="btn" id="go">${q.kind==='explain'?'Show model answer':'Check'}</button>${q.kind==='explain'?'':'<button class="btn ghost small" id="hintb">Need a hint?</button>'}${S.i<t-1?'<button class="btn ghost small" id="skipb">Skip for now</button>':''}</div>${q.later?'<p class="padnote" style="margin:-8px 0 0">You skipped this one earlier. Give it a try now.</p>':''}</div>
+  <section class="panel scratch" aria-label="Scratch paper">
+    <div class="stool"><span class="ttl">Scratch paper</span>
+      <button class="tool" data-tool="ink" aria-pressed="true"><span class="dot" style="background:var(--ink)"></span>Pencil</button>
+      <button class="tool" data-tool="berry" aria-pressed="false"><span class="dot" style="background:var(--berry)"></span>Pink</button>
+      <button class="tool" data-tool="violet" aria-pressed="false"><span class="dot" style="background:var(--violet)"></span>Purple</button>
+      <button class="tool" data-tool="erase" aria-pressed="false">Eraser</button>
+      <button class="tool" id="undo">Undo</button>
+      <button class="tool" id="clr">Clear</button></div>
+    <canvas id="pad"></canvas>
+    <p class="padnote">Write with your finger or a stylus. The page clears for each new question.</p>
+  </section></div>`;
+  document.getElementById('quit').onclick=home;
+  document.getElementById('go').onclick=act;if(clockId)tick();
+  const sb=document.getElementById('skipb');
+  // skip: move this question to the end of the list so it comes back after the others
+  if(sb)sb.onclick=()=>{if(S.locked||S.revealed||S.tries)return;const [cur]=S.qs.splice(S.i,1);cur.later=true;S.qs.push(cur);show();window.scrollTo({top:0})};
+  const hb=document.getElementById('hintb');if(hb)hb.onclick=()=>{if(S.locked)return;const fb=document.getElementById('fb');fb.innerHTML=`<div class="fb try"><h3>Hint</h3><div>${q.hint}</div></div>`;hb.hidden=true};
+  initPad();
+  app.querySelectorAll('input.n').forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter')act()}));
+  if(q.kind==='cmp'||q.kind==='choice')app.querySelectorAll('.cmpbtns button,.choices button').forEach(b=>b.onclick=()=>{if(S.locked)return;
+    app.querySelectorAll('.cmpbtns button,.choices button').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');S.pick=b.dataset.c;
+    const sl=document.getElementById('slot');if(sl)sl.textContent=b.dataset.c});
+  S.pick=null;
+}
+const num=id=>{const el=document.getElementById(id);if(!el)return null;const v=el.value.replace(/[,\s$]/g,'');if(v==='')return '';return /^\d+$/.test(v)?+v:NaN};
+function grade(q){ // returns {ok, empty, msg}
+  if(q.kind==='int'){const v=num('a1');if(v==='')return{empty:1};return{ok:v===q.ans}}
+  if(q.kind==='divR'){const a=num('a1');let r=num('a2');if(a==='')return{empty:1};if(r==='')r=0;return{ok:a===q.ans[0]&&r===q.ans[1]}}
+  if(q.kind==='cmp'||q.kind==='choice'){if(!S.pick)return{empty:1,msg:'Tap an answer first.'};return{ok:S.pick===q.ans}}
+  if(q.kind==='frac'){let w=num('aw'),n=num('an'),d=num('ad');w=w===''||w===null?0:w;
+    if(n===''&&d===''){if(!w)return{empty:1};n=0;d=1}
+    if(n===''||d===''||isNaN(n)||isNaN(d)||isNaN(w))return{empty:1,msg:'Fill in both the top and the bottom.'};
+    if(d===0)return{empty:1,msg:'The bottom number can’t be 0.'};
+    const N=w*d+n,[an,ad]=q.ans,same=N*ad===an*d;if(!same)return{ok:false};
+    if(q.mixed&&n>=d)return{ok:false,msg:'Right value, but the fraction part should be smaller than 1.'};
+    if(q.simplest&&gcd(n,d)!==1)return{ok:false,msg:'Right value, but it can be simplified more.'};
+    const simple=gcd(n,d)===1&&(n<d||d===1);
+    return{ok:true,note:simple?'':`Tip: the simplest way to write it is ${Fs(an,ad)}.`}}}
+function act(){const q=S.qs[S.i];
+  if(S.locked){S.i++;if(S.i>=S.qs.length)return results();show();window.scrollTo({top:0});return}
+  if(q.kind==='explain'){if(S.revealed)return;S.revealed=true;const go=document.getElementById('go');go.hidden=true;const sk=document.getElementById('skipb');if(sk)sk.hidden=true;
+    document.getElementById('fb').innerHTML=`<div class="fb try"><h3>Compare with a model answer</h3><div class="work">${q.sol}</div>
+      <p style="margin:12px 0 8px;font-weight:700">Does your explanation have the same big idea?</p>
+      <div class="btnrow"><button class="btn small" id="selfY">Yes, it matches</button><button class="btn ghost small" id="selfN">Not yet</button></div></div>`;
+    const done=yes=>{S.res.push({q,r:yes?'first':'miss'});document.getElementById('selfY').disabled=true;document.getElementById('selfN').disabled=true;
+      go.hidden=false;lock([], '')};
+    document.getElementById('selfY').onclick=()=>done(true);document.getElementById('selfN').onclick=()=>done(false);return}
+  const g=grade(q),nud=document.getElementById('nudge'),fb=document.getElementById('fb');
+  if(g.empty){nud.hidden=false;nud.textContent=g.msg||'Type your answer first.';return}
+  nud.hidden=true;const inputs=app.querySelectorAll('input.n');
+  const hb=document.getElementById('hintb');if(hb)hb.hidden=true;const sk=document.getElementById('skipb');if(sk)sk.hidden=true;
+  if(g.ok){S.res.push({q,r:S.tries?'second':'first'});lock(inputs,'ok');confetti();
+    fb.innerHTML=`<div class="fb good"><h3>${S.tries?'Got it!':pick(['Correct!','Yes! Well done.','Great work!','Exactly right!','You got it!','Brilliant!'])}</h3>${g.note?`<div>${g.note}</div>`:''}<div class="work">${q.sol}</div></div>`;return}
+  if(S.tries===0){S.tries=1;inputs.forEach(i=>i.classList.add('no'));
+    fb.innerHTML=`<div class="fb try"><h3>Not quite. Try once more.</h3><div>${g.msg?g.msg+' ':''}${q.hint}</div></div>`;
+    inputs.forEach(i=>i.addEventListener('input',()=>i.classList.remove('no'),{once:true}));return}
+  S.res.push({q,r:'miss'});lock(inputs,'no');
+  fb.innerHTML=`<div class="fb bad"><h3>Let’s look at how it works.</h3><div class="work">${q.sol}</div></div>`}
+function lock(inputs,c){S.locked=true;inputs.forEach(i=>{i.readOnly=true;i.classList.remove('no');if(c)i.classList.add(c)});
+  const go=document.getElementById('go');go.textContent=S.i+1>=S.qs.length?'See results':'Next';go.focus({preventScroll:true})}
+
+function confetti(){try{if(matchMedia('(prefers-reduced-motion: reduce)').matches)return}catch(_){}
+  const card=app.querySelector('.card');if(!card)return;const box=document.createElement('div');box.className='confetti';
+  const cols=['--berry','--violet','--gold','--mint'];
+  for(let i=0;i<24;i++){const el=document.createElement('i');const ang=Math.random()*Math.PI*2,dist=70+Math.random()*120;
+    el.style.background=`var(${cols[i%4]})`;el.style.setProperty('--x',`${Math.cos(ang)*dist}px`);el.style.setProperty('--y',`${Math.sin(ang)*dist-40}px`);el.style.setProperty('--r',`${Math.random()*540-270}deg`);box.appendChild(el)}
+  card.appendChild(box);setTimeout(()=>box.remove(),1100)}
+
+/* ---------- scratch paper ---------- */
+function initPad(){const c=document.getElementById('pad'),ctx=c.getContext('2d');
+  let strokes=[],cur=null,tool='ink',penSeen=false;
+  const color=name=>getComputedStyle(document.documentElement).getPropertyValue('--'+name).trim()||'#1c2836';
+  function style(s){ctx.globalCompositeOperation=s.erase?'destination-out':'source-over';ctx.strokeStyle=s.erase?'#000':color(s.color);
+    ctx.lineWidth=s.w;ctx.lineCap='round';ctx.lineJoin='round'}
+  function drawStroke(s){style(s);ctx.beginPath();const p=s.pts;ctx.moveTo(p[0].x,p[0].y);
+    if(p.length===1)ctx.lineTo(p[0].x+.1,p[0].y+.1);for(let i=1;i<p.length;i++)ctx.lineTo(p[i].x,p[i].y);ctx.stroke()}
+  function redraw(){ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,c.width,c.height);ctx.restore();strokes.forEach(drawStroke)}
+  function size(){const r=c.getBoundingClientRect(),dpr=window.devicePixelRatio||1;if(!r.width)return;
+    c.width=Math.round(r.width*dpr);c.height=Math.round(r.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);redraw()}
+  const pos=e=>{const r=c.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
+  c.addEventListener('pointerdown',e=>{if(e.pointerType==='pen')penSeen=true;
+    if(penSeen&&e.pointerType==='touch')return; // palm rejection once a stylus is used
+    e.preventDefault();try{c.setPointerCapture(e.pointerId)}catch(_){}
+    cur={id:e.pointerId,erase:tool==='erase',color:tool==='erase'?'ink':tool,w:tool==='erase'?28:(e.pointerType==='pen'?2.6:3.4),pts:[pos(e)]};
+    strokes.push(cur);drawStroke(cur)});
+  c.addEventListener('pointermove',e=>{if(!cur||e.pointerId!==cur.id)return;e.preventDefault();
+    const evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];style(cur);ctx.beginPath();
+    let last=cur.pts[cur.pts.length-1];ctx.moveTo(last.x,last.y);
+    (evs.length?evs:[e]).forEach(ev=>{const p=pos(ev);cur.pts.push(p);ctx.lineTo(p.x,p.y)});ctx.stroke()});
+  const end=e=>{if(cur&&e.pointerId===cur.id)cur=null};
+  c.addEventListener('pointerup',end);c.addEventListener('pointercancel',end);
+  app.querySelectorAll('.tool[data-tool]').forEach(b=>b.onclick=()=>{tool=b.dataset.tool;
+    app.querySelectorAll('.tool[data-tool]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))});
+  document.getElementById('undo').onclick=()=>{strokes.pop();redraw()};
+  document.getElementById('clr').onclick=()=>{strokes=[];redraw()};
+  if(window.ResizeObserver)new ResizeObserver(size).observe(c);else window.addEventListener('resize',size);
+  try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redraw)}catch(_){}
+  size()}
+
+/* ---------- results ---------- */
+function results(){const used=Math.min(elapsed(),S.limit||Infinity);stopClock();app.classList.remove('wide');window.scrollTo({top:0});
+  const t=S.res.length,c=S.res.filter(x=>x.r==='first'||x.r==='second').length,f=S.res.filter(x=>x.r==='first').length,sk=S.res.filter(x=>x.r==='skip').length;
+  if(S.mode==='daily'){const log=loadLog(),k=ymd(new Date());if(!log[k]||c>=log[k].c)log[k]={c,f,t,sec:used};saveLog(log)}
+  const missed=S.res.filter(x=>x.r!=='first').map(x=>x.q);
+  const msg=c===t?'Perfect score!':c/t>=.8?'Strong work today.':c/t>=.5?'Good effort. Practice makes it stick.':'Keep going. Every try helps your brain grow.';
+  const mk={first:'★',second:'✓',miss:'✗',skip:'–'};if(c/t>=.8)setTimeout(()=>{const r=app.querySelector('.results');if(r){r.classList.add('card');confetti()}},300);
+  app.innerHTML=`
+  <section class="panel results"><div class="tag" style="background:var(--t-geo)">${S.mode==='daily'?'Today’s workout':S.mode==='retry'?'Second chance':TOPICS[S.mode].name+' practice'}</div>
+    ${S.timeUp?`<div class="timesup">Time’s up! ${sk} question${sk===1?'':'s'} not reached.</div>`:''}
+    <div class="rtop">${MASCOT}<div><div class="score">${c}<small> / ${t}</small></div><h2>${msg}</h2></div></div>
+    ${S.mode==='daily'?`<div class="todaynote yes">Today is marked on your calendar ✓ ${streak(loadLog())>1?`${streak(loadLog())} days in a row!`:''}</div>`:''}
+    <div class="date">Time: ${mmss(used)}${S.limit?` of ${mmss(S.limit)}`:''}</div>
+    <div class="key"><span>★ right first try (${f})</span><span>✓ right on second try (${c-f})</span><span>✗ missed (${t-c-sk})</span>${sk?`<span>– not reached (${sk})</span>`:''}</div>
+    <div class="rlist">${S.res.map((x,i)=>`<div class="ritem ${x.r}"><span class="m">${mk[x.r]}</span><span>${i+1}. ${TOPICS[x.q.topic].name}</span></div>`).join('')}</div></section>
+  <div class="btnrow">${missed.length?`<button class="btn" id="redo">Practise the ${missed.length} tricky ${missed.length>1?'ones':'one'} again</button>`:''}<button class="btn ghost" id="home">Home</button></div>`;
+  document.getElementById('home').onclick=home;
+  const r=document.getElementById('redo');if(r)r.onclick=()=>start(missed,'retry')}
+
+home();
+})();
+</script>
+
+</body>
+</html>
