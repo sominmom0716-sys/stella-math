@@ -221,6 +221,9 @@ textarea{font:inherit;font-size:1.05rem;width:100%;min-height:96px;padding:10px 
 
 /* results */
 .results{padding:24px;display:flex;flex-direction:column;gap:14px}
+.reviewnote{align-self:flex-start;font-weight:800;color:var(--violet);background:var(--violet-soft);border-radius:999px;padding:4px 14px}
+.rv{display:flex;flex-direction:column;gap:6px;font-size:1.05rem}
+.rv .fr{font-family:var(--f-num);font-weight:700}
 .rtop{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 .score{font-family:var(--f-display);font-size:3.6rem;font-weight:700;line-height:1;color:var(--berry)}
 .score small{font-size:1.4rem;color:var(--muted)}
@@ -245,6 +248,7 @@ textarea{font:inherit;font-size:1.05rem;width:100%;min-height:96px;padding:10px 
 (function(){
 const app=document.getElementById('app');
 const fmt=n=>n.toLocaleString('en-CA');
+const escH=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
 function rng(seed){let a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function hash(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
@@ -660,14 +664,7 @@ function answerUI(q){
   if(q.kind==='explain')return `<label for="ax" style="flex-basis:100%;font-weight:400">Write your explanation on the scratch paper, or type it here. Use numbers, words or a drawing.</label><textarea id="ax" aria-label="Your explanation"></textarea>`;
   if(q.kind==='choice')return `<div class="choices">${q.opts.map(o=>`<button type="button" data-c="${o}" aria-pressed="false">${o}</button>`).join('')}</div>`;
   if(q.kind==='cmp')return `<div class="cmpbtns">${['<','=','>'].map(s=>`<button type="button" data-c="${s}" aria-pressed="false">${s}</button>`).join('')}</div>`}
-function show(){const q=S.qs[S.i],t=S.qs.length;S.tries=0;S.locked=false;S.revealed=false;app.classList.add('wide');
-  app.innerHTML=`
-  <div class="qtop"><button class="back" id="quit">Home</button><div class="bar"><i style="width:${S.i/t*100}%"></i></div><span class="count">${S.i+1}/${t}</span><span class="clock" id="clock">⏱</span></div>
-  <div class="quiz"><div class="qcol">
-  <section class="panel card"><div class="tag" style="background:var(--${TOPICS[q.topic].color})">${TOPICS[q.topic].icon}&nbsp; ${TOPICS[q.topic].name}</div>${q.q}
-    <div class="answer" id="ans">${answerUI(q)}</div><p class="nudge" id="nudge" hidden></p><div id="fb"></div></section>
-  <div class="btnrow"><button class="btn" id="go">${q.kind==='explain'?'Show model answer':'Check'}</button>${q.kind==='explain'?'':'<button class="btn ghost small" id="hintb">Need a hint?</button>'}${S.i<t-1?'<button class="btn ghost small" id="skipb">Skip for now</button>':''}</div>${q.later?'<p class="padnote" style="margin:-8px 0 0">You skipped this one earlier. Give it a try now.</p>':''}</div>
-  <section class="panel scratch" aria-label="Scratch paper">
+const SCRATCH=`<section class="panel scratch" aria-label="Scratch paper">
     <div class="stool"><span class="ttl">Scratch paper</span>
       <button class="tool" data-tool="ink" aria-pressed="true"><span class="dot" style="background:var(--ink)"></span>Pencil</button>
       <button class="tool" data-tool="berry" aria-pressed="false"><span class="dot" style="background:var(--berry)"></span>Pink</button>
@@ -676,20 +673,69 @@ function show(){const q=S.qs[S.i],t=S.qs.length;S.tries=0;S.locked=false;S.revea
       <button class="tool" id="undo">Undo</button>
       <button class="tool" id="clr">Clear</button></div>
     <canvas id="pad"></canvas>
-    <p class="padnote">Write with your finger or a stylus. The page clears for each new question.</p>
-  </section></div>`;
+    <p class="padnote">Write with your finger or a stylus. Your writing stays with each question.</p>
+  </section>`;
+const tagHTML=q=>`<div class="tag" style="background:var(--${TOPICS[q.topic].color})">${TOPICS[q.topic].icon}&nbsp; ${TOPICS[q.topic].name}</div>`;
+// keep the current question's state so Back → Forward returns to it exactly
+function snapshot(q){const vals={};app.querySelectorAll('.answer input,.answer textarea').forEach(el=>{if(el.id)vals[el.id]={v:el.value,c:el.className,ro:el.readOnly}});
+  const go=document.getElementById('go'),hide={};['hintb','skipb'].forEach(id=>{const el=document.getElementById(id);hide[id]=el?el.hidden:false});
+  S.draft={q,vals,pick:S.pick,tries:S.tries,locked:S.locked,revealed:S.revealed,fb:document.getElementById('fb').innerHTML,go:go.textContent,goHidden:go.hidden,hide}}
+function rightAns(q){if(q.kind==='int')return (q.pre||'')+fmt(q.ans)+(q.unit?' '+q.unit:'');
+  if(q.kind==='divR')return q.labels?`${q.ans[0]} ${q.labels[0]}, ${q.ans[1]} ${q.labels[1]}`:`${q.ans[0]} R ${q.ans[1]}`;
+  if(q.kind==='frac')return Fs(q.ans[0],q.ans[1])+(q.unit?' '+q.unit:'');
+  if(q.kind==='cmp')return `${q.fa} ${q.ans} ${q.fb}`;return q.ans}
+function yourAns(q){const v=id=>{const el=document.getElementById(id);return el?escH(el.value.trim()):''};
+  if(q.kind==='int')return v('a1')?(q.pre||'')+v('a1')+(q.unit?' '+q.unit:''):'';
+  if(q.kind==='divR')return q.labels?`${v('a1')} ${q.labels[0]}, ${v('a2')||0} ${q.labels[1]}`:`${v('a1')} R ${v('a2')||0}`;
+  if(q.kind==='frac'){const w=v('aw'),n=v('an'),d=v('ad');return (w?w+' ':'')+(n||d?F(n,d):'')}
+  if(q.kind==='cmp')return `${q.fa} ${S.pick} ${q.fb}`;
+  if(q.kind==='choice')return S.pick;return v('ax')}
+function bindSelf(q){const go=document.getElementById('go');
+  const done=yes=>{if(S.locked)return;S.res.push({q,r:yes?'first':'miss',you:yourAns(q)});document.getElementById('selfY').disabled=true;document.getElementById('selfN').disabled=true;go.hidden=false;lock([],'')};
+  document.getElementById('selfY').onclick=()=>done(true);document.getElementById('selfN').onclick=()=>done(false)}
+function review(j){const q=S.qs[j],t=S.qs.length,r=S.res.find(x=>x.q===q)||{};
+  const lab={first:'★ Right on the first try',second:'✓ Right on the second try',miss:'✗ Not right this time'};
+  app.innerHTML=`
+  <div class="qtop"><button class="back" id="quit">Home</button><div class="bar"><i style="width:${S.i/t*100}%"></i></div><span class="count">${j+1}/${t}</span><span class="clock" id="clock">⏱</span></div>
+  <div class="reviewnote">Looking back at question ${j+1}</div>
+  <div class="quiz"><div class="qcol">
+  <section class="panel card">${tagHTML(q)}${q.q}
+    <div class="answer"><div class="rv"><b>${lab[r.r]||''}</b>${q.kind==='explain'?(r.you?`<div>Your explanation: ${r.you}</div>`:''):`<div>Your answer: <b>${r.you||'—'}</b></div><div>Right answer: <b>${rightAns(q)}</b></div>`}</div></div>
+    <div class="fb ${r.r==='miss'?'bad':'good'}"><h3>How it works</h3><div class="work">${q.sol}</div></div></section>
+  <div class="btnrow">${j>0?'<button class="btn ghost small" id="rvback">← Back</button>':''}<button class="btn" id="rvnext">${j+1<S.i?'Next →':`Back to question ${S.i+1} →`}</button></div></div>
+  ${SCRATCH}</div>`;
+  document.getElementById('quit').onclick=home;if(clockId)tick();
+  const b=document.getElementById('rvback');if(b)b.onclick=()=>{review(j-1);window.scrollTo({top:0})};
+  document.getElementById('rvnext').onclick=()=>{if(j+1<S.i)review(j+1);else show();window.scrollTo({top:0})};
+  initPad(q.pad||(q.pad=[]))}
+function show(){const q=S.qs[S.i],t=S.qs.length;S.tries=0;S.locked=false;S.revealed=false;app.classList.add('wide');
+  app.innerHTML=`
+  <div class="qtop"><button class="back" id="quit">Home</button><div class="bar"><i style="width:${S.i/t*100}%"></i></div><span class="count">${S.i+1}/${t}</span><span class="clock" id="clock">⏱</span></div>
+  <div class="quiz"><div class="qcol">
+  <section class="panel card">${tagHTML(q)}${q.q}
+    <div class="answer" id="ans">${answerUI(q)}</div><p class="nudge" id="nudge" hidden></p><div id="fb"></div></section>
+  <div class="btnrow">${S.i>0?'<button class="btn ghost small" id="backb">← Back</button>':''}<button class="btn" id="go">${q.kind==='explain'?'Show model answer':'Check'}</button>${q.kind==='explain'?'':'<button class="btn ghost small" id="hintb">Need a hint?</button>'}${S.i<t-1?'<button class="btn ghost small" id="skipb">Skip for now</button>':''}</div>${q.later?'<p class="padnote" style="margin:-8px 0 0">You skipped this one earlier. Give it a try now.</p>':''}</div>
+  ${SCRATCH}</div>`;
   document.getElementById('quit').onclick=home;
   document.getElementById('go').onclick=act;if(clockId)tick();
   const sb=document.getElementById('skipb');
   // skip: move this question to the end of the list so it comes back after the others
   if(sb)sb.onclick=()=>{if(S.locked||S.revealed||S.tries)return;const [cur]=S.qs.splice(S.i,1);cur.later=true;S.qs.push(cur);show();window.scrollTo({top:0})};
   const hb=document.getElementById('hintb');if(hb)hb.onclick=()=>{if(S.locked)return;const fb=document.getElementById('fb');fb.innerHTML=`<div class="fb try"><h3>Hint</h3><div>${q.hint}</div></div>`;hb.hidden=true};
-  initPad();
+  initPad(q.pad||(q.pad=[]));
   app.querySelectorAll('input.n').forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter')act()}));
   if(q.kind==='cmp'||q.kind==='choice')app.querySelectorAll('.cmpbtns button,.choices button').forEach(b=>b.onclick=()=>{if(S.locked)return;
     app.querySelectorAll('.cmpbtns button,.choices button').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');S.pick=b.dataset.c;
     const sl=document.getElementById('slot');if(sl)sl.textContent=b.dataset.c});
   S.pick=null;
+  const d=S.draft;S.draft=null;
+  if(d&&d.q===q){S.tries=d.tries;S.locked=d.locked;S.revealed=d.revealed;S.pick=d.pick;
+    Object.entries(d.vals).forEach(([id,o])=>{const el=document.getElementById(id);if(el){el.value=o.v;el.className=o.c;el.readOnly=o.ro}});
+    if(d.pick){app.querySelectorAll('.cmpbtns button,.choices button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.c===d.pick)));const sl=document.getElementById('slot');if(sl)sl.textContent=d.pick}
+    document.getElementById('fb').innerHTML=d.fb;const go=document.getElementById('go');go.textContent=d.go;go.hidden=d.goHidden;
+    ['hintb','skipb'].forEach(id=>{const el=document.getElementById(id);if(el&&d.hide[id])el.hidden=true});
+    if(document.getElementById('selfY'))bindSelf(q)}
+  const bb=document.getElementById('backb');if(bb)bb.onclick=()=>{snapshot(q);review(S.i-1);window.scrollTo({top:0})};
 }
 const num=id=>{const el=document.getElementById(id);if(!el)return null;const v=el.value.replace(/[,\s$]/g,'');if(v==='')return '';return /^\d+$/.test(v)?+v:NaN};
 function grade(q){ // returns {ok, empty, msg}
@@ -711,19 +757,17 @@ function act(){const q=S.qs[S.i];
     document.getElementById('fb').innerHTML=`<div class="fb try"><h3>Compare with a model answer</h3><div class="work">${q.sol}</div>
       <p style="margin:12px 0 8px;font-weight:700">Does your explanation have the same big idea?</p>
       <div class="btnrow"><button class="btn small" id="selfY">Yes, it matches</button><button class="btn ghost small" id="selfN">Not yet</button></div></div>`;
-    const done=yes=>{S.res.push({q,r:yes?'first':'miss'});document.getElementById('selfY').disabled=true;document.getElementById('selfN').disabled=true;
-      go.hidden=false;lock([], '')};
-    document.getElementById('selfY').onclick=()=>done(true);document.getElementById('selfN').onclick=()=>done(false);return}
+    bindSelf(q);return}
   const g=grade(q),nud=document.getElementById('nudge'),fb=document.getElementById('fb');
   if(g.empty){nud.hidden=false;nud.textContent=g.msg||'Type your answer first.';return}
   nud.hidden=true;const inputs=app.querySelectorAll('input.n');
   const hb=document.getElementById('hintb');if(hb)hb.hidden=true;const sk=document.getElementById('skipb');if(sk)sk.hidden=true;
-  if(g.ok){S.res.push({q,r:S.tries?'second':'first'});lock(inputs,'ok');confetti();
+  if(g.ok){S.res.push({q,r:S.tries?'second':'first',you:yourAns(q)});lock(inputs,'ok');confetti();
     fb.innerHTML=`<div class="fb good"><h3>${S.tries?'Got it!':pick(['Correct!','Yes! Well done.','Great work!','Exactly right!','You got it!','Brilliant!'])}</h3>${g.note?`<div>${g.note}</div>`:''}<div class="work">${q.sol}</div></div>`;return}
   if(S.tries===0){S.tries=1;inputs.forEach(i=>i.classList.add('no'));
     fb.innerHTML=`<div class="fb try"><h3>Not quite. Try once more.</h3><div>${g.msg?g.msg+' ':''}${q.hint}</div></div>`;
     inputs.forEach(i=>i.addEventListener('input',()=>i.classList.remove('no'),{once:true}));return}
-  S.res.push({q,r:'miss'});lock(inputs,'no');
+  S.res.push({q,r:'miss',you:yourAns(q)});lock(inputs,'no');
   fb.innerHTML=`<div class="fb bad"><h3>Let’s look at how it works.</h3><div class="work">${q.sol}</div></div>`}
 function lock(inputs,c){S.locked=true;inputs.forEach(i=>{i.readOnly=true;i.classList.remove('no');if(c)i.classList.add(c)});
   const go=document.getElementById('go');go.textContent=S.i+1>=S.qs.length?'See results':'Next';go.focus({preventScroll:true})}
@@ -736,8 +780,8 @@ function confetti(){try{if(matchMedia('(prefers-reduced-motion: reduce)').matche
   card.appendChild(box);setTimeout(()=>box.remove(),1100)}
 
 /* ---------- scratch paper ---------- */
-function initPad(){const c=document.getElementById('pad'),ctx=c.getContext('2d');
-  let strokes=[],cur=null,tool='ink',penSeen=false;
+function initPad(store){const c=document.getElementById('pad'),ctx=c.getContext('2d');
+  const strokes=store||[];let cur=null,tool='ink',penSeen=false;
   const color=name=>getComputedStyle(document.documentElement).getPropertyValue('--'+name).trim()||'#1c2836';
   function style(s){ctx.globalCompositeOperation=s.erase?'destination-out':'source-over';ctx.strokeStyle=s.erase?'#000':color(s.color);
     ctx.lineWidth=s.w;ctx.lineCap='round';ctx.lineJoin='round'}
@@ -761,7 +805,7 @@ function initPad(){const c=document.getElementById('pad'),ctx=c.getContext('2d')
   app.querySelectorAll('.tool[data-tool]').forEach(b=>b.onclick=()=>{tool=b.dataset.tool;
     app.querySelectorAll('.tool[data-tool]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))});
   document.getElementById('undo').onclick=()=>{strokes.pop();redraw()};
-  document.getElementById('clr').onclick=()=>{strokes=[];redraw()};
+  document.getElementById('clr').onclick=()=>{strokes.length=0;redraw()};
   if(window.ResizeObserver)new ResizeObserver(size).observe(c);else window.addEventListener('resize',size);
   try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redraw)}catch(_){}
   size()}
