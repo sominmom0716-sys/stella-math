@@ -226,6 +226,44 @@ textarea{font:inherit;font-size:1.05rem;width:100%;min-height:96px;padding:10px 
 .notes p{margin:0}
 .notecount{font-family:var(--f-display);font-weight:700;font-size:2.2rem;line-height:1;color:var(--berry)}
 .saved{font-weight:800;color:var(--berry);margin-top:6px}
+.hometabs{display:flex;gap:4px;background:var(--card);padding:5px;border-radius:999px;border:2px solid var(--line);align-self:flex-start;flex-wrap:wrap}
+.hometabs button{border:none;background:none;font-family:var(--f-display);font-weight:600;font-size:1.05rem;padding:8px 18px;border-radius:999px}
+.hometabs button[aria-selected="true"]{background:linear-gradient(135deg,var(--btn-a),var(--btn-b));color:#fff}
+.tabpane{display:flex;flex-direction:column;gap:20px}
+.exam{padding:22px;display:flex;flex-direction:column;gap:16px;background:linear-gradient(160deg,var(--t-word),var(--violet-soft))}
+.examtop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.exam h2{font-size:1.6rem;margin-top:6px}
+.countdown{font-family:var(--f-display);font-weight:700;font-size:1.25rem;background:var(--gold);color:var(--gold-ink);border-radius:16px;padding:8px 16px;box-shadow:0 3px 0 var(--shadow)}
+.tests{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.tcard{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.tcard.now{border-color:var(--berry);box-shadow:0 4px 0 var(--berry-soft)}
+.tcard h3{font-size:1.2rem}
+.tday{font-weight:800;font-size:.82rem;color:var(--berry)}
+.tsub{font-size:.82rem;color:var(--muted)}
+.tscore{font-family:var(--f-display);font-weight:700;color:var(--gold-ink);background:var(--gold);border-radius:999px;padding:2px 10px}
+.exam .hint{margin:0;font-size:.9rem;color:var(--muted)}
+.review{padding:20px;display:flex;flex-direction:column;gap:12px}
+.review h2{font-size:1.35rem}.review h3{font-size:1.05rem;margin-bottom:4px}
+.review p{margin:0}
+.pvrow{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
+.pvrow span{display:flex;flex-direction:column;align-items:center;background:var(--violet-soft);border-radius:8px;padding:4px 6px;min-width:52px}
+.pvrow small{font-size:.6rem;font-weight:800;color:var(--muted);text-align:center;line-height:1.1}
+.pvrow b{font-family:var(--f-num);font-size:1.2rem}
+table.pvt{border-collapse:collapse;width:100%;min-width:520px}
+table.pvt th{font-size:.72rem;font-weight:800;background:var(--violet-soft);border:2px solid var(--line);padding:6px 4px;line-height:1.15}
+table.pvt td{border:2px solid var(--line);height:64px;text-align:center;font-size:1.05rem;letter-spacing:2px;color:var(--berry);padding:4px;word-break:break-all;width:14.28%}
+.tablewrap{overflow-x:auto;max-width:100%}
+b.hl{background:var(--gold);color:var(--gold-ink);border-radius:6px;padding:0 4px;text-decoration:underline}
+input.n.wide{width:100%;font-size:1.2rem;text-align:left}
+.ord{display:flex;flex-direction:column;gap:10px;width:100%}
+.oslots{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.oslots div{border:2.5px dashed var(--line);border-radius:12px;min-height:46px;display:grid;place-items:center;font-family:var(--f-num);font-weight:700;font-size:.95rem;background:var(--paper);padding:2px}
+.oslots div.f{border-style:solid;border-color:var(--violet);background:var(--violet-soft)}
+.olab{display:flex;justify-content:space-between;font-size:.8rem;font-weight:800;color:var(--muted)}
+.ochips{display:flex;flex-wrap:wrap;gap:8px}
+.ochips button{font-family:var(--f-num);font-weight:700;font-size:1.05rem;padding:8px 14px;border:2.5px solid var(--line);border-radius:999px;background:var(--card)}
+.ochips button:disabled{opacity:.3}
+@media (max-width:480px){.oslots{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .reviewnote{align-self:flex-start;font-weight:800;color:var(--violet);background:var(--violet-soft);border-radius:999px;padding:4px 14px}
 .rv{display:flex;flex-direction:column;gap:6px;font-size:1.05rem}
 .rv .fr{font-family:var(--f-num);font-weight:700}
@@ -562,12 +600,114 @@ function geo(type){type=type||pick(GEO_TYPES);
       sol:`<div>Area of a triangle = <b>base × height ÷ 2</b>, because a triangle is half of a parallelogram with the same base and height.</div><div>${b} × ${h} = ${b*h}</div><div>${b*h} ÷ 2 = <b>${b*h/2} cm²</b></div>`}}
   }}
 
+/* ---------- Unit 1: Numbers to 1 000 000 (mirrors the class practice assessment) ---------- */
+const sp=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+const PVN=['Millions','Hundred Thousands','Ten Thousands','Thousands','Hundreds','Tens','Ones'];
+const PVS=['million','hundred thousand','ten thousand','thousand','hundred','ten','one'];
+const PVV=[1000000,100000,10000,1000,100,10,1];
+const ONES=['','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'],TENW=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+function w3(n){const s=[];if(n>=100){s.push(ONES[Math.floor(n/100)]+' hundred');n%=100}if(n>=20)s.push(TENW[Math.floor(n/10)]+(n%10?'-'+ONES[n%10]:''));else if(n>0)s.push(ONES[n]);return s.join(' ')}
+function numWords(n){const p=[],m=Math.floor(n/1e6),t=Math.floor(n%1e6/1000),r=n%1000;if(m)p.push(w3(m)+' million');if(t)p.push(w3(t)+' thousand');if(r)p.push(w3(r));const s=p.join(' ');return s[0].toUpperCase()+s.slice(1)}
+const d7=n=>String(n).padStart(7,'0').split('').map(Number);
+const placeTerms=n=>d7(n).map((d,i)=>d*PVV[i]).filter(x=>x);
+function u1Num(minDigits,maxDigits,zeros){let n;do{const len=ri(minDigits,maxDigits);let s=String(ri(1,9));for(let i=1;i<len;i++)s+=(R()<(zeros||.25)?0:ri(1,9));n=+s}while(!String(n).slice(1).includes('0')&&R()<.6);return n}
+const pvSol=n=>`<div class="pvrow">${d7(n).map((d,i)=>`<span><small>${PVN[i]}</small><b>${d}</b></span>`).join('')}</div>`;
+const U1={
+ chart(){const m=R()<.45?ri(1,4):0;const ds=[m,ri(1,9),...Array.from({length:5},()=>R()<.28?0:ri(1,9))];const n=+ds.join('');
+  return {kind:'int',ans:n,q:`<p class="ask">Write the numeral shown by the chart. The dots in each box tell how many of that place value there are.</p>
+   <div class="tablewrap"><table class="pvt"><tr>${PVN.map(h=>`<th>${h}</th>`).join('')}</tr><tr>${ds.map(d=>`<td>${'●'.repeat(d)}</td>`).join('')}</tr></table></div>`,
+   hint:`Count the dots in each box. That count is the digit for that place. An empty box is a 0.`,
+   sol:`<div>Count the dots in each place. An empty box means 0.</div>${pvSol(n)}<div>Standard form: <b>${sp(n)}</b></div>`}},
+ placeWords(){const n=u1Num(6,6,.2),ds=d7(n);const parts=ds.map((d,i)=>d?`${d} ${PVS[i]}${d>1?'s':''}`:null).filter(Boolean);
+  if(R()<.5)parts.sort(()=>R()-.5);
+  return {kind:'int',ans:n,q:`<p class="ask">Write the numeral.</p><p class="word"><b>${parts.join(', ')}</b></p>`,
+   hint:`Put each digit in its place on a place value chart. Places that are not named get a 0.`,
+   sol:`<div>Put each digit in its place. Missing places are 0.</div>${pvSol(n)}<div>Answer: <b>${sp(n)}</b></div>`}},
+ expSum(){const n=u1Num(6,6,.2),t=placeTerms(n);return {kind:'int',ans:n,q:`<p class="ask">Write the numeral.</p><div class="big" style="font-size:1.5rem">${t.map(sp).join(' + ')}</div>`,
+   hint:`Each part is one place value. Line them up and add.`,sol:`<div>Each number is one place:</div>${pvSol(n)}<div>Answer: <b>${sp(n)}</b></div>`}},
+ expMul(){const n=u1Num(6,6,.15),ds=d7(n),last=n%100;const terms=ds.slice(0,5).map((d,i)=>d?`${d} × ${sp(PVV[i])}`:null).filter(Boolean);if(last)terms.push(String(last));
+  return {kind:'int',ans:n,q:`<p class="ask">Write the numeral.</p><div class="big" style="font-size:1.4rem">${terms.join(' + ')}</div>`,
+   hint:`Work out each part first (for example 5 × 100 000 = 500 000), then add. Watch the last part: it can be a 2-digit number.`,
+   sol:`${ds.slice(0,5).map((d,i)=>d?`<div>${d} × ${sp(PVV[i])} = ${sp(d*PVV[i])}</div>`:'').join('')}${last?`<div>${last} = ${Math.floor(last/10)} tens and ${last%10} ones</div>`:''}<div>Add them: <b>${sp(n)}</b></div>`}},
+ words(){const n=u1Num(6,R()<.3?7:6,.3);return {kind:'int',ans:n,q:`<p class="ask">Write the numeral.</p><p class="word"><b>${numWords(n)}</b></p>`,
+   hint:`Find the word “thousand”. Everything before it goes in the thousands period, everything after goes in the hundreds, tens and ones. Fill empty places with 0.`,
+   sol:`<div>Split it at the word <b>thousand</b>${n>=1e6?' (and million)':''}. Each part is a group of 3 digits.</div>${pvSol(n)}<div>Answer: <b>${sp(n)}</b></div>`}},
+ digit(){let n,i,ds;do{n=u1Num(5,6,.15);ds=String(n).split('');i=ri(0,ds.length-1)}while(ds[i]==='0');
+  const pv=10**(ds.length-1-i),val=+ds[i]*pv,shown=String(n).split('').map((c,k)=>k===i?`<b class="hl">${c}</b>`:c);
+  let out='',cnt=0;for(let k=shown.length-1;k>=0;k--){out=shown[k]+out;cnt++;if(cnt%3===0&&k>0)out=' '+out}
+  return {kind:'int',ans:val,q:`<p class="ask">What is the <b>value</b> of the highlighted digit?</p><div class="big">${out}</div>`,
+   hint:`Find which place the digit is in. The value is the digit times that place (for example 4 in the ten thousands place = 40 000).`,
+   sol:`<div>The ${ds[i]} is in the <b>${PVN[7-(ds.length-i)].toLowerCase()}</b> place.</div><div>${ds[i]} × ${sp(pv)} = <b>${sp(val)}</b></div>`}},
+ order(){const a=u1Num(6,6,.1),s=String(a).split('');
+  const swap=(x,i,j)=>{const t=[...x];[t[i],t[j]]=[t[j],t[i]];return +t.join('')};
+  let set=new Set([a,swap(s,3,4),swap(s,1,2),+(s[1]+s[0]+s.slice(2).join('')),+(s.slice(1,3).join('')+s.slice(4).join(''))]);
+  while(set.size<5)set.add(u1Num(5,6,.2));let nums=[...set].filter(x=>x>=10000).slice(0,5);while(nums.length<5){nums.push(u1Num(6,6,.2));nums=[...new Set(nums)]}
+  const sorted=[...nums].sort((x,y)=>x-y);
+  return {kind:'order',ans:sorted,opts:nums,q:`<p class="ask">Order these numbers from <b>least</b> to <b>greatest</b>. Tap them in order.</p>`,
+   hint:`First compare how many digits each number has. Then compare digits from the left, place by place.`,
+   sol:`<div>Fewer digits means a smaller number. With the same number of digits, compare from the left until the digits are different.</div><div><b>${sorted.map(sp).join(' &lt; ')}</b></div>`}},
+ expanded(){const n=u1Num(5,6,.3);const t=placeTerms(n);return {kind:'expanded',ans:t,q:`<p class="ask">Write <b>${sp(n)}</b> in expanded form.</p>`,
+   hint:`Write each digit as its value and join them with +. Skip the zeros.`,
+   sol:`<div>Each digit becomes its value. Zeros are left out.</div><div><b>${sp(n)} = ${t.map(sp).join(' + ')}</b></div>`}},
+ moreLess(){const n=u1Num(6,6,.1);const opts=[[10000,'10 000 more'],[-20000,'20 000 less'],[100000,'100 000 more'],[-1000,'1 000 less'],[1000,'1 000 more'],[-10000,'10 000 less'],[200000,'200 000 more'],[-100,'100 less']].filter(([d])=>n+d>0&&n+d<1e6);
+  const [d,lab]=pick(opts);const r=n+d;const pl=Math.abs(d)>=100000?'hundred thousands':Math.abs(d)>=10000?'ten thousands':Math.abs(d)>=1000?'thousands':'hundreds';
+  return {kind:'int',ans:r,q:`<p class="ask">Think about the number <b>${sp(n)}</b>.</p><p class="word">What is <b>${lab}</b>?</p>`,
+   hint:`Only the ${pl} digit should change (unless you need to regroup).`,
+   sol:`<div>${d>0?'Add':'Subtract'} ${sp(Math.abs(d))}: look at the <b>${pl}</b> place.</div><div>${sp(n)} ${d>0?'+':'−'} ${sp(Math.abs(d))} = <b>${sp(r)}</b></div>`}},
+ bills(){const [b,T]=pick([[100,500000],[1000,1000000],[100,1000000],[10,100000],[1000,500000],[10000,1000000],[100,300000],[10,50000]]);const ans=T/b;
+  return {kind:'int',ans,unit:'bills',q:`<p class="word">How many <b>$${sp(b)}</b> bills would it take to make <b>$${sp(T)}</b>?</p>`,
+   hint:`How many $${sp(b)} bills make $${sp(b*10)}? How many make $${sp(b*100)}? Keep going.`,
+   sol:`<div>10 bills of $${sp(b)} make $${sp(b*10)}. 100 bills make $${sp(b*100)}. Each time the total gets 10 times bigger, you need 10 times more bills.</div><div>$${sp(T)} ÷ $${sp(b)} = <b>${sp(ans)}</b> bills</div><div class="chk">Check: ${sp(ans)} × ${sp(b)} = ${sp(T)} ✓</div>`}},
+ steps(){const [s,T]=pick([[5000,50000],[5000,500000],[2000,100000],[4000,40000],[5000,100000],[2500,100000]]);const ans=T/s;
+  return {kind:'int',ans,unit:'days',q:`<p class="word">You walk <b>${sp(s)}</b> steps each day. How many days will it take to walk <b>${sp(T)}</b> steps?</p>`,
+   hint:`How many groups of ${sp(s)} are in ${sp(T)}? Try counting up: ${sp(s)}, ${sp(2*s)}, ${sp(3*s)}…`,
+   sol:`<div>${sp(s)} × ${ans} = ${sp(T)}, so it takes <b>${ans}</b> days.</div><div class="chk">Pattern: ${sp(s)} × 10 = ${sp(s*10)}${s*100<=T?`, ${sp(s)} × 100 = ${sp(s*100)}`:''}</div>`}},
+ estimate(){const add=R()<.5;let a=ri(21000,89000),b=ri(11000,add?Math.min(89000,99000-a):a-9000);if(!add&&b>=a)b=Math.floor(a/2);
+  const ex=add?a+b:a-b,ra=Math.round(a/1000)*1000,rb=Math.round(b/1000)*1000,est=add?ra+rb:ra-rb,rta=Math.round(a/10000)*10000,rtb=Math.round(b/10000)*10000;
+  const tol=Math.max(3000,Math.round(ex*.12));
+  return {kind:'est',ans:est,lo:ex-tol,hi:ex+tol,q:`<p class="ask">Estimate. Then explain your strategy on the scratch paper.</p><div class="big" style="font-size:1.6rem">${sp(a)} ${add?'+':'−'} ${sp(b)}</div>`,
+   hint:`Round each number to the nearest thousand (or ten thousand), then ${add?'add':'subtract'}.`,
+   sol:`<div><b>Round to the nearest thousand:</b> ${sp(ra)} ${add?'+':'−'} ${sp(rb)} = ${sp(est)}</div><div><b>Or round to the nearest ten thousand:</b> ${sp(rta)} ${add?'+':'−'} ${sp(rtb)} = ${sp(add?rta+rtb:rta-rtb)}</div><div class="chk">Exact answer: ${sp(ex)}. Any estimate close to this is fine if you can explain how you rounded.</div>`}},
+ pair(){const diff=R()<.5,T=diff?pick([2000,3000,5000,1000]):pick([8000,6000,10000,9000]);
+  return {kind:'pair',mode:diff?'diff':'sum',target:T,q:`<p class="ask">Find two numbers with a ${diff?'<b>difference</b>':'<b>sum</b>'} of <b>about ${sp(T)}</b>.</p>`,
+   hint:diff?`Pick a number, then add about ${sp(T)} to it to get the second number.`:`Split ${sp(T)} into two parts, then change them a little so they are not exact.`,
+   sol:`<div>Many answers work. Example: ${diff?`${sp(5012+T)} and 5 012 → ${sp(5012+T)} − 5 012 = ${sp(T)}`:`${sp(T/2+203)} and ${sp(T/2-188)} → about ${sp(T)}`}</div><div class="chk">“About” means it does not have to be exact, just close.</div>`}},
+ trip(){const v=pick([80,90,100,60]),h=ri(9,19),d=v*h+pick([-60,-40,20,40,60]);const ex=d/v;
+  return {kind:'est',ans:Math.round(ex),lo:Math.floor(ex*.88),hi:Math.ceil(ex*1.12),unit:'hours',q:`<p class="word">A family is driving <b>${sp(d)} km</b>. They can travel about <b>${v} km</b> each hour. <b>Estimate</b> how many hours the trip will take.</p>`,
+   hint:`Round ${sp(d)} to a number that is easy to divide by ${v}.`,
+   sol:`<div>Round to a friendly number: ${sp(d)} is about ${sp(Math.round(d/v)*v)}.</div><div>${sp(Math.round(d/v)*v)} ÷ ${v} = <b>${Math.round(d/v)}</b> hours, so <b>about ${Math.round(d/v)} hours</b>.</div><div class="chk">Estimates around ${Math.floor(ex*.88)}–${Math.ceil(ex*1.12)} hours are reasonable.</div>`}},
+ reason(){const a=ri(213,894),b=ri(3,9),ok=R()<.45,shown=ok?a*b:a*b*10,ra=Math.round(a/100)*100;
+  return {kind:'choice',opts:['Reasonable','Not reasonable'],ans:ok?'Reasonable':'Not reasonable',q:`<p class="word">A student calculates <b>${a} × ${b} = ${sp(shown)}</b>. Use estimation: is the answer reasonable?</p>`,
+   hint:`Round ${a} to the nearest hundred and multiply by ${b}. Is the student's answer close to that?`,
+   sol:`<div>Estimate: ${a} is about ${ra}. ${ra} × ${b} = ${sp(ra*b)}.</div><div>${sp(shown)} is ${ok?'close to':'about 10 times bigger than'} ${sp(ra*b)}, so it is <b>${ok?'reasonable':'not reasonable'}</b>.${ok?'':` The answer should be about ${sp(ra*b)} (exact: ${sp(a*b)}).`}</div>`}},
+ arena(){const c=pick([18650,21400,24800,16300,19200]),T=pick([100000,100000,150000]);const lo=Math.floor(T/c),hi=Math.ceil(T/c),rc=Math.round(c/5000)*5000||c;
+  return {kind:'est',ans:Math.round(T/rc),lo,hi,unit:'games',q:`<p class="word">A hockey arena holds <b>${sp(c)}</b> people. About how many sold-out games would be needed to sell about <b>${sp(T)}</b> seats?</p>`,
+   hint:`Round ${sp(c)} to a friendly number. How many of those make about ${sp(T)}?`,
+   sol:`<div>${sp(c)} is about ${sp(rc)}. ${sp(rc)} × ${Math.round(T/rc)} = ${sp(rc*Math.round(T/rc))}, which is about ${sp(T)}.</div><div>So about <b>${Math.round(T/rc)}</b> games. (${lo} games = ${sp(lo*c)} seats, ${hi} games = ${sp(hi*c)} seats, so ${lo} or ${hi} are both good estimates.)</div>`}},
+ explain(){const items=[
+   {q:`Why might an estimate be more useful than an exact answer when planning a trip?`,sol:`<div>When you plan, things change: traffic, stops for food and gas, weather. An exact answer would not be exact in real life anyway. A quick estimate like “about 18 hours” is good enough to plan when to leave and where to sleep, and it is faster to work out.</div>`},
+   {q:`Explain why 608 215 is greater than 608 125.`,sol:`<div>Both numbers have the same hundred thousands, ten thousands and thousands (608 thousand). Compare the next place, the <b>hundreds</b>: 2 hundreds is more than 1 hundred. So 608 215 is greater.</div>`},
+   {q:`Explain why 86 090 is less than 286 510, even though 8 is bigger than 2.`,sol:`<div>86 090 has only 5 digits, so its biggest place is ten thousands. 286 510 has 6 digits, so it has hundred thousands. A 6-digit number is always greater than a 5-digit number.</div>`},
+   {q:`How does the value of the 5 change in 500 000 and 50 000? Explain.`,sol:`<div>In 500 000 the 5 is in the hundred thousands place, so it is worth 500 000. In 50 000 it is in the ten thousands place, worth 50 000. Each place to the left is worth <b>10 times</b> more, so 500 000 is 10 times 50 000.</div>`},
+   {q:`Lily says 402 079 is “four hundred twenty thousand seventy-nine.” Is she right? Explain.`,sol:`<div><b>No.</b> 402 079 has 402 in the thousands period, so it is “four hundred <b>two</b> thousand seventy-nine.” “Four hundred twenty thousand” would be 420 000.</div>`},
+   {q:`Explain how you would round 76 405 to the nearest ten thousand.`,sol:`<div>Look at the ten thousands digit (7) — the number is between 70 000 and 80 000. Then look at the digit to its right, the thousands digit (6). It is 5 or more, so round <b>up</b> to <b>80 000</b>.</div>`}];
+  const it=pick(items);return {kind:'explain',q:`<p class="word">${it.q}</p>`,sol:it.sol}}
+};
+function u1(type){const q=U1[type]();q.topic='unit1';return q}
+const U1_TYPES=Object.keys(U1);
+// one fixed practice test per day, same order as the class assessment
+function u1Test(n){R=rng(hash('u1test-'+n));
+  const plan=['chart','chart','placeWords',n===2?'expMul':'expSum','words','digit','digit','order','expanded','moreLess','moreLess',n===1?'bills':n===2?'steps':pick(['bills','steps']),'estimate','pair','trip','reason','arena','explain'];
+  if(n===3)plan.splice(5,0,'expMul');
+  const set=plan.map(u1);R=Math.random;return set}
+
 const TOPICS={mul:{name:'Multiplication',sub:'3-digit × 1-digit and 2-digit',icon:'×',color:'t-mul',make:()=>R()<.4?mul1():mul2()},
   div:{name:'Division',sub:'4-digit ÷ 1-digit, 3-digit ÷ 2-digit',icon:'÷',color:'t-div',make:div},
   frac:{name:'Fractions',sub:'add, subtract, compare, simplify',icon:'½',color:'t-frac',make:()=>frac()},
   geo:{name:'Shapes & angles',sub:'angles, triangles, area',icon:'∠',color:'t-geo',make:()=>geo()},
   word:{name:'Word problems',sub:'read, think, solve',icon:'✎',color:'t-word',make:()=>word()},
-  think:{name:'Explain your thinking',sub:'write why, then compare',icon:'?',color:'t-think',make:()=>think()}};
+  think:{name:'Explain your thinking',sub:'write why, then compare',icon:'?',color:'t-think',make:()=>think()},
+  unit1:{name:'Numbers to 1 000 000',sub:'Unit 1 test practice',icon:'#',color:'t-word',make:()=>u1(pick(U1_TYPES))}};
 
 // each list is walked in a fixed shuffled order, so every story is used once before any repeats
 function dayIndex(str){const [y,m,d]=str.split('-').map(Number);return Math.round(Date.UTC(y,m-1,d)/864e5)}
@@ -594,7 +734,7 @@ function saveLog(l){try{localStorage.setItem('mathLog',JSON.stringify(l))}catch(
 function getLimit(){try{const v=localStorage.getItem('mathTimer');return v==null?20:+v}catch(e){return 20}}
 function setLimit(v){try{localStorage.setItem('mathTimer',String(v))}catch(e){}}
 /* mistake notebook: missed questions are kept (across days) until answered right on the first try */
-const NOTE_KEYS=['topic','kind','ans','q','sol','hint','unit','pre','labels','opts','fa','fb','mixed','simplest','noWhole'];
+const NOTE_KEYS=['topic','kind','ans','q','sol','hint','unit','pre','labels','opts','fa','fb','mixed','simplest','noWhole','lo','hi','mode','target'];
 function loadNotes(){try{return JSON.parse(localStorage.getItem('mathNotes')||'[]')}catch(e){return []}}
 function saveNotes(n){try{localStorage.setItem('mathNotes',JSON.stringify(n))}catch(e){}}
 function addNote(q){const notes=loadNotes();const ex=q.noteId&&notes.find(n=>n.id===q.noteId);
@@ -615,7 +755,24 @@ function streak(log){let d=new Date(),n=0;if(!log[ymd(d)])d.setDate(d.getDate()-
   while(log[ymd(d)]){n++;d.setDate(d.getDate()-1)}return n}
 
 /* ---------- home ---------- */
-function home(editName){stopClock();app.classList.remove('wide');const log=loadLog(),today=ymd(new Date()),done=log[today],s=streak(log),name=getName();
+const EXAM='2026-10-15';
+const TESTS=[{n:1,date:'2026-10-13',label:'Tue, Oct 13'},{n:2,date:'2026-10-14',label:'Wed, Oct 14'},{n:3,date:'2026-10-15',label:'Thu, Oct 15 · warm-up'}];
+function daysTo(str){const [y,m,d]=str.split('-').map(Number);const a=new Date(y,m-1,d),t=new Date();t.setHours(0,0,0,0);return Math.round((a-t)/864e5)}
+function testPrepHTML(){let tl={};try{tl=JSON.parse(localStorage.getItem('mathTests')||'{}')}catch(e){}
+  const dl=daysTo(EXAM),today=ymd(new Date());
+  const when=dl>1?`${dl} days to go`:dl===1?'Tomorrow!':dl===0?'Today! You’ve got this.':'Test done. Great work!';
+  return `<section class="panel exam"><div class="examtop"><div><div class="tag" style="background:var(--card)"># Unit 1 test</div><h2>Numbers to 1 000 000</h2><div class="date">Thursday, October 15</div></div><div class="countdown">${when}</div></div>
+    <div class="tests">${TESTS.map(t=>{const r=tl['test'+t.n],isToday=t.date===today;
+      return `<div class="tcard ${isToday?'now':''}"><div class="tday">${isToday?'Today · ':''}${t.label}</div><h3>Practice Test ${t.n}</h3><div class="tsub">${t.n===3?19:18} questions, just like the real test</div>${r?`<div class="tscore">★ ${r.c} / ${r.t}</div>`:''}<button class="btn small ${r?'ghost':''}" data-test="${t.n}">${r?'Try again':'Start'}</button></div>`}).join('')}</div>
+    <p class="hint">Do one test each day. Use the scratch paper to show your thinking, like on the real test. Missed questions go to your mistake notebook.</p></section>
+  <section class="panel review"><h2>Quick review</h2>
+    <div><h3>Place value</h3><p>Each place is <b>10 times</b> the place to its right. Digits are grouped in threes with a space.</p>${pvSol(4352016)}<p>4 352 016 = four million three hundred fifty-two thousand sixteen</p></div>
+    <div><h3>Three ways to write a number</h3><p><b>Standard:</b> 562 417<br><b>Expanded:</b> 500 000 + 60 000 + 2 000 + 400 + 10 + 7<br><b>Words:</b> five hundred sixty-two thousand four hundred seventeen</p></div>
+    <div><h3>Comparing and ordering</h3><p>Count the digits first: more digits = bigger. Same number of digits? Compare from the <b>left</b> until the digits are different.</p></div>
+    <div><h3>Estimating</h3><p>Round to a friendly number (nearest thousand or ten thousand), then calculate. <b>Always say how you rounded.</b> To check if an answer is reasonable, estimate and see if it is close.</p></div>
+  </section>
+  <div class="btnrow"><button class="btn ghost" id="u1mix"># Mixed Unit 1 practice (10 questions)</button></div>`}
+function home(editName){stopClock();app.classList.remove('wide');let tab='daily';try{tab=localStorage.getItem('mathHomeTab')||(ymd(new Date())<=EXAM?'test':'daily')}catch(e){tab=ymd(new Date())<=EXAM?'test':'daily'}const log=loadLog(),today=ymd(new Date()),done=log[today],s=streak(log),name=getName();
   const now=new Date(),y=now.getFullYear(),mo=now.getMonth(),first=new Date(y,mo,1).getDay(),dim=new Date(y,mo+1,0).getDate();
   let cells=['S','M','T','W','T','F','S'].map(w=>`<div class="wd">${w}</div>`).join('');for(let i=0;i<first;i++)cells+='<div></div>';
   let monthCount=0;
@@ -632,6 +789,9 @@ function home(editName){stopClock();app.classList.remove('wide');const log=loadL
     <div class="streak">${s} day streak</div></header>
   ${!name||editName?`<form class="panel namebox" id="nameform"><label for="nm">What's your name?</label><input id="nm" maxlength="20" autocomplete="off" value="${esc(name)}" placeholder="Type your name"><button class="btn small">Save</button></form>`:''}
   <p class="bubble">${cheer}</p>
+  <div class="hometabs" role="tablist"><button role="tab" data-tab="test" aria-selected="${tab==='test'}">★ Test prep</button><button role="tab" data-tab="daily" aria-selected="${tab==='daily'}">Daily practice</button></div>
+  <div class="tabpane" id="pane-test" ${tab==='test'?'':'hidden'}>${testPrepHTML()}</div>
+  <div class="tabpane" id="pane-daily" ${tab==='daily'?'':'hidden'}>
   <section class="panel today">
     <h2>${done?`Done today: ${done.c} out of ${done.t}. Amazing work!`:`Today's workout: 16 questions`}</h2>
     <div class="mixline"><span class="chip">3 multiplication</span><span class="chip">3 division</span><span class="chip">3 fractions</span><span class="chip">3 shapes &amp; angles</span><span class="chip">2 word problems</span><span class="chip">2 explain</span></div>
@@ -653,11 +813,16 @@ function home(editName){stopClock();app.classList.remove('wide');const log=loadL
     <div class="todaynote ${done?'yes':'no'}">${done?`Today is done! ${s>1?`That makes ${s} days in a row.`:'Come back tomorrow to start a streak.'}`:(s?`Not yet today. Do today's workout to make it ${s+1} days in a row!`:`Not yet today. Start your streak now!`)}</div>
     <div class="cal">${cells}</div>
     <div class="loglegend"><span>♥ practised</span><span>★ 80% or more right</span></div></section>
+  </div>
   <p class="parent">부모님께: 하루 16문제 (곱셈 3, 나눗셈 3, 분수 3, 도형·각도 3, 문장제 2, 서술형 2). 같은 날에는 같은 문제가 나오고, 문장제와 서술형은 모든 이야기를 한 번씩 다 쓴 뒤에야 다시 나와요. 기록은 이 기기의 브라우저에만 저장됩니다.</p>`;
   const nf=document.getElementById('nameform');if(nf)nf.onsubmit=e=>{e.preventDefault();setName(document.getElementById('nm').value.trim());home()};
   const cn=document.getElementById('chname');if(cn)cn.onclick=()=>home(true);
   app.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{setLimit(+b.dataset.m);
     app.querySelectorAll('#seg button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))});
+  app.querySelectorAll('.hometabs button').forEach(b=>b.onclick=()=>{const t=b.dataset.tab;try{localStorage.setItem('mathHomeTab',t)}catch(e){}
+    app.querySelectorAll('.hometabs button').forEach(x=>x.setAttribute('aria-selected',String(x===b)));document.getElementById('pane-test').hidden=t!=='test';document.getElementById('pane-daily').hidden=t!=='daily'});
+  app.querySelectorAll('[data-test]').forEach(b=>b.onclick=()=>start(u1Test(+b.dataset.test),'test'+b.dataset.test));
+  const um=document.getElementById('u1mix');if(um)um.onclick=()=>start(topicSet('unit1'),'unit1');
   const nb=document.getElementById('notesb');if(nb)nb.onclick=()=>start(loadNotes().slice(0,10).map(n=>({...n.q,noteId:n.id})),'notes');
   document.getElementById('startDaily').onclick=()=>start(dailySet(today),'daily');
   app.querySelectorAll('.topic').forEach(b=>b.onclick=()=>start(topicSet(b.dataset.t),b.dataset.t));
@@ -687,6 +852,11 @@ function answerUI(q){
     <div class="fstack"><input class="n s" id="an" inputmode="numeric" autocomplete="off" aria-label="Numerator (top)"><div class="rule"></div><input class="n s" id="ad" inputmode="numeric" autocomplete="off" aria-label="Denominator (bottom)"></div></div>
     ${q.unit?`<span class="unit">${q.unit}</span>`:''}<label style="flex-basis:100%;font-weight:400;font-size:.85rem">${q.noWhole?'Top and bottom.':'Use the left box for a whole number if you need one.'}</label>`;
   if(q.kind==='explain')return `<label for="ax" style="flex-basis:100%;font-weight:400">Write your explanation on the scratch paper, or type it here. Use numbers, words or a drawing.</label><textarea id="ax" aria-label="Your explanation"></textarea>`;
+  if(q.kind==='est')return `<label for="a1">Your estimate:</label><span class="unit">about</span><input class="n" id="a1" inputmode="numeric" autocomplete="off" aria-label="Your estimate">${q.unit?`<span class="unit">${q.unit}</span>`:''}`;
+  if(q.kind==='pair')return `<label for="a1">Number 1</label><input class="n" id="a1" inputmode="numeric" autocomplete="off"><label for="a2">Number 2</label><input class="n" id="a2" inputmode="numeric" autocomplete="off">`;
+  if(q.kind==='expanded')return `<input class="n wide" id="a1" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. 500 000 + 60 000 + 2 000 + …" aria-label="Expanded form">`;
+  if(q.kind==='order')return `<div class="ord"><div class="olab"><span>Least</span><span>Greatest</span></div><div class="oslots" id="oslots">${q.opts.map(()=>'<div></div>').join('')}</div>
+    <div class="ochips" id="ochips">${q.opts.map(o=>`<button type="button" data-v="${o}">${sp(o)}</button>`).join('')}</div><div><button type="button" class="tool" id="oundo">Undo</button></div></div>`;
   if(q.kind==='choice')return `<div class="choices">${q.opts.map(o=>`<button type="button" data-c="${o}" aria-pressed="false">${o}</button>`).join('')}</div>`;
   if(q.kind==='cmp')return `<div class="cmpbtns">${['<','=','>'].map(s=>`<button type="button" data-c="${s}" aria-pressed="false">${s}</button>`).join('')}</div>`}
 const SCRATCH=`<section class="panel scratch" aria-label="Scratch paper">
@@ -702,10 +872,16 @@ const SCRATCH=`<section class="panel scratch" aria-label="Scratch paper">
   </section>`;
 const tagHTML=q=>`<div class="tag" style="background:var(--${TOPICS[q.topic].color})">${TOPICS[q.topic].icon}&nbsp; ${TOPICS[q.topic].name}</div>`;
 // keep the current question's state so Back → Forward returns to it exactly
+function drawOrder(q){const sl=[...document.querySelectorAll('#oslots div')];sl.forEach((d,i)=>{const v=S.pick[i];d.textContent=v!=null?sp(v):'';d.classList.toggle('f',v!=null)});
+  document.querySelectorAll('#ochips button').forEach(b=>{b.disabled=S.pick.includes(+b.dataset.v)})}
 function snapshot(q){const vals={};app.querySelectorAll('.answer input,.answer textarea').forEach(el=>{if(el.id)vals[el.id]={v:el.value,c:el.className,ro:el.readOnly}});
   const go=document.getElementById('go'),hide={};['hintb','skipb'].forEach(id=>{const el=document.getElementById(id);hide[id]=el?el.hidden:false});
-  S.draft={q,vals,pick:S.pick,tries:S.tries,locked:S.locked,revealed:S.revealed,fb:document.getElementById('fb').innerHTML,go:go.textContent,goHidden:go.hidden,hide}}
-function rightAns(q){if(q.kind==='int')return (q.pre||'')+fmt(q.ans)+(q.unit?' '+q.unit:'');
+  S.draft={q,vals,pick:Array.isArray(S.pick)?[...S.pick]:S.pick,tries:S.tries,locked:S.locked,revealed:S.revealed,fb:document.getElementById('fb').innerHTML,go:go.textContent,goHidden:go.hidden,hide}}
+function rightAns(q){if(q.kind==='int')return (q.pre||'')+(q.topic==='unit1'?sp:fmt)(q.ans)+(q.unit?' '+q.unit:'');
+  if(q.kind==='est')return `about ${sp(q.ans)}${q.unit?' '+q.unit:''} (anything from ${sp(q.lo)} to ${sp(q.hi)} is OK)`;
+  if(q.kind==='pair')return q.mode==='diff'?`any two numbers about ${sp(q.target)} apart`:`any two numbers that add to about ${sp(q.target)}`;
+  if(q.kind==='expanded')return q.ans.map(sp).join(' + ');
+  if(q.kind==='order')return q.ans.map(sp).join(' &lt; ');
   if(q.kind==='divR')return q.labels?`${q.ans[0]} ${q.labels[0]}, ${q.ans[1]} ${q.labels[1]}`:`${q.ans[0]} R ${q.ans[1]}`;
   if(q.kind==='frac')return Fs(q.ans[0],q.ans[1])+(q.unit?' '+q.unit:'');
   if(q.kind==='cmp')return `${q.fa} ${q.ans} ${q.fb}`;return q.ans}
@@ -714,6 +890,10 @@ function yourAns(q){const v=id=>{const el=document.getElementById(id);return el?
   if(q.kind==='divR')return q.labels?`${v('a1')} ${q.labels[0]}, ${v('a2')||0} ${q.labels[1]}`:`${v('a1')} R ${v('a2')||0}`;
   if(q.kind==='frac'){const w=v('aw'),n=v('an'),d=v('ad');return (w?w+' ':'')+(n||d?F(n,d):'')}
   if(q.kind==='cmp')return `${q.fa} ${S.pick} ${q.fb}`;
+  if(q.kind==='est')return v('a1')?'about '+v('a1')+(q.unit?' '+q.unit:''):'';
+  if(q.kind==='pair')return `${v('a1')} and ${v('a2')}`;
+  if(q.kind==='expanded')return v('a1');
+  if(q.kind==='order')return (S.pick||[]).map(sp).join(' &lt; ');
   if(q.kind==='choice')return S.pick;return v('ax')}
 function bindSelf(q){const go=document.getElementById('go');
   const done=yes=>{if(S.locked)return;record(q,yes?'first':'miss',yourAns(q));document.getElementById('selfY').disabled=true;document.getElementById('selfN').disabled=true;go.hidden=false;lock([],'')};
@@ -760,12 +940,24 @@ function show(){const q=S.qs[S.i],t=S.qs.length;S.tries=0;S.locked=false;S.revea
     document.getElementById('fb').innerHTML=d.fb;const go=document.getElementById('go');go.textContent=d.go;go.hidden=d.goHidden;
     ['hintb','skipb'].forEach(id=>{const el=document.getElementById(id);if(el&&d.hide[id])el.hidden=true});
     if(document.getElementById('selfY'))bindSelf(q)}
+  if(q.kind==='order'){if(!Array.isArray(S.pick))S.pick=[];drawOrder(q);
+    app.querySelectorAll('#ochips button').forEach(b=>b.onclick=()=>{if(S.locked||S.pick.length>=q.opts.length)return;S.pick.push(+b.dataset.v);drawOrder(q)});
+    document.getElementById('oundo').onclick=()=>{if(S.locked)return;S.pick.pop();drawOrder(q)}}
   const bb=document.getElementById('backb');if(bb)bb.onclick=()=>{snapshot(q);review(S.i-1);window.scrollTo({top:0})};
 }
 const num=id=>{const el=document.getElementById(id);if(!el)return null;const v=el.value.replace(/[,\s$]/g,'');if(v==='')return '';return /^\d+$/.test(v)?+v:NaN};
 function grade(q){ // returns {ok, empty, msg}
   if(q.kind==='int'){const v=num('a1');if(v==='')return{empty:1};return{ok:v===q.ans}}
   if(q.kind==='divR'){const a=num('a1');let r=num('a2');if(a==='')return{empty:1};if(r==='')r=0;return{ok:a===q.ans[0]&&r===q.ans[1]}}
+  if(q.kind==='est'){const v=num('a1');if(v==='')return{empty:1,msg:'Type your estimate first.'};if(isNaN(v))return{ok:false};return{ok:v>=q.lo&&v<=q.hi}}
+  if(q.kind==='pair'){const a=num('a1'),b=num('a2');if(a===''||b==='')return{empty:1,msg:'Write both numbers.'};if(isNaN(a)||isNaN(b))return{ok:false};
+    const val=q.mode==='diff'?Math.abs(a-b):a+b;return{ok:val>=q.target*.8&&val<=q.target*1.2,msg:`Your numbers ${q.mode==='diff'?'are':'add up to'} ${sp(val)}${q.mode==='diff'?' apart':''}.`}}
+  if(q.kind==='expanded'){const raw=document.getElementById('a1').value.trim();if(!raw)return{empty:1,msg:'Write the expanded form first.'};
+    const terms=raw.split('+').map(t=>t.split(/[×x*]/i).map(z=>Number(z.replace(/[\s,]/g,''))).reduce((p,c)=>p*c,1));
+    if(terms.some(t=>!Number.isFinite(t)))return{ok:false,msg:'Use numbers joined with + signs.'};
+    const a=terms.filter(t=>t).sort((x,y)=>y-x),b=[...q.ans].sort((x,y)=>y-x),ok=a.length===b.length&&a.every((v,i)=>v===b[i]);
+    if(!ok&&a.reduce((p,c)=>p+c,0)===b.reduce((p,c)=>p+c,0))return{ok:false,msg:'That adds up to the right number, but expanded form needs one part for each non-zero digit.'};return{ok}}
+  if(q.kind==='order'){if(!S.pick||S.pick.length<q.opts.length)return{empty:1,msg:'Tap all the numbers in order first.'};return{ok:S.pick.every((v,i)=>v===q.ans[i])}}
   if(q.kind==='cmp'||q.kind==='choice'){if(!S.pick)return{empty:1,msg:'Tap an answer first.'};return{ok:S.pick===q.ans}}
   if(q.kind==='frac'){let w=num('aw'),n=num('an'),d=num('ad');w=w===''||w===null?0:w;
     if(n===''&&d===''){if(!w)return{empty:1};n=0;d=1}
@@ -839,11 +1031,12 @@ function initPad(store){const c=document.getElementById('pad'),ctx=c.getContext(
 function results(){const used=Math.min(elapsed(),S.limit||Infinity);stopClock();app.classList.remove('wide');window.scrollTo({top:0});
   const t=S.res.length,c=S.res.filter(x=>x.r==='first'||x.r==='second').length,f=S.res.filter(x=>x.r==='first').length,sk=S.res.filter(x=>x.r==='skip').length;
   if(S.mode==='daily'){const log=loadLog(),k=ymd(new Date());if(!log[k]||c>=log[k].c)log[k]={c,f,t,sec:used};saveLog(log)}
+  if(S.mode.startsWith('test')){try{const tl=JSON.parse(localStorage.getItem('mathTests')||'{}');if(!tl[S.mode]||c>=tl[S.mode].c)tl[S.mode]={c,t,date:ymd(new Date())};localStorage.setItem('mathTests',JSON.stringify(tl))}catch(e){}}
   const missed=S.res.filter(x=>x.r!=='first').map(x=>x.q);
   const msg=c===t?'Perfect score!':c/t>=.8?'Strong work today.':c/t>=.5?'Good effort. Practice makes it stick.':'Keep going. Every try helps your brain grow.';
   const mk={first:'★',second:'✓',miss:'✗',skip:'–'};if(c/t>=.8)setTimeout(()=>{const r=app.querySelector('.results');if(r){r.classList.add('card');confetti()}},300);
   app.innerHTML=`
-  <section class="panel results"><div class="tag" style="background:var(--t-geo)">${S.mode==='daily'?'Today’s workout':S.mode==='retry'?'Second chance':S.mode==='notes'?'Mistake notebook':TOPICS[S.mode].name+' practice'}</div>
+  <section class="panel results"><div class="tag" style="background:var(--t-geo)">${S.mode==='daily'?'Today’s workout':S.mode==='retry'?'Second chance':S.mode==='notes'?'Mistake notebook':S.mode.startsWith('test')?'Unit 1 · Practice Test '+S.mode.slice(4):TOPICS[S.mode].name+' practice'}</div>
     ${S.timeUp?`<div class="timesup">Time’s up! ${sk} question${sk===1?'':'s'} not reached.</div>`:''}
     <div class="rtop">${MASCOT}<div><div class="score">${c}<small> / ${t}</small></div><h2>${msg}</h2></div></div>
     ${S.mode==='notes'?`<div class="todaynote yes">You cleared ${S.cleared||0} question${S.cleared===1?'':'s'} from your notebook. ${loadNotes().length} left.</div>`:(S.mode!=='retry'&&S.res.some(x=>x.r==='miss'||x.r==='second')?`<div class="todaynote no">♥ ${S.res.filter(x=>x.r==='miss'||x.r==='second').length} question${S.res.filter(x=>x.r==='miss'||x.r==='second').length>1?'s':''} saved to your mistake notebook.</div>`:'')}
