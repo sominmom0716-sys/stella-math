@@ -221,6 +221,11 @@ textarea{font:inherit;font-size:1.05rem;width:100%;min-height:96px;padding:10px 
 
 /* results */
 .results{padding:24px;display:flex;flex-direction:column;gap:14px}
+.notes{padding:20px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(160deg,var(--t-think),var(--t-geo))}
+.notes h2{font-size:1.35rem}
+.notes p{margin:0}
+.notecount{font-family:var(--f-display);font-weight:700;font-size:2.2rem;line-height:1;color:var(--berry)}
+.saved{font-weight:800;color:var(--berry);margin-top:6px}
 .reviewnote{align-self:flex-start;font-weight:800;color:var(--violet);background:var(--violet-soft);border-radius:999px;padding:4px 14px}
 .rv{display:flex;flex-direction:column;gap:6px;font-size:1.05rem}
 .rv .fr{font-family:var(--f-num);font-weight:700}
@@ -588,6 +593,19 @@ function loadLog(){try{return JSON.parse(localStorage.getItem('mathLog')||'{}')}
 function saveLog(l){try{localStorage.setItem('mathLog',JSON.stringify(l))}catch(e){}}
 function getLimit(){try{const v=localStorage.getItem('mathTimer');return v==null?20:+v}catch(e){return 20}}
 function setLimit(v){try{localStorage.setItem('mathTimer',String(v))}catch(e){}}
+/* mistake notebook: missed questions are kept (across days) until answered right on the first try */
+const NOTE_KEYS=['topic','kind','ans','q','sol','hint','unit','pre','labels','opts','fa','fb','mixed','simplest','noWhole'];
+function loadNotes(){try{return JSON.parse(localStorage.getItem('mathNotes')||'[]')}catch(e){return []}}
+function saveNotes(n){try{localStorage.setItem('mathNotes',JSON.stringify(n))}catch(e){}}
+function addNote(q){const notes=loadNotes();const ex=q.noteId&&notes.find(n=>n.id===q.noteId);
+  if(ex){ex.wrong=(ex.wrong||1)+1}
+  else{const o={};NOTE_KEYS.forEach(k=>{if(q[k]!==undefined)o[k]=q[k]});const id=Date.now()+'-'+Math.floor(Math.random()*1e6);
+    q.noteId=id;notes.push({id,q:o,date:ymd(new Date()),wrong:1});while(notes.length>80)notes.shift()}
+  saveNotes(notes)}
+function removeNote(id){saveNotes(loadNotes().filter(n=>n.id!==id))}
+function record(q,r,you){S.res.push({q,r,you});
+  if(S.mode==='notes'){if(r==='first'){removeNote(q.noteId);S.cleared=(S.cleared||0)+1}else addNote(q)}
+  else if(r!=='first')addNote(q)}
 function getName(){try{return localStorage.getItem('mathName')||'Stella'}catch(e){return 'Stella'}}
 function setName(v){try{localStorage.setItem('mathName',v)}catch(e){}}
 const MASCOT=`<svg class="mascot" viewBox="0 0 100 100" aria-hidden="true"><path class="m-star" d="M50 7 L62 36 L93 38 L69 58 L77 89 L50 72 L23 89 L31 58 L7 38 L38 36 Z" stroke-linejoin="round"/><circle class="m-eye" cx="41" cy="50" r="4"/><circle class="m-eye" cx="59" cy="50" r="4"/><circle class="m-blush" cx="33" cy="59" r="5"/><circle class="m-blush" cx="67" cy="59" r="5"/><path class="m-mouth" d="M44 59 Q50 65 56 59"/></svg>`;
@@ -620,6 +638,12 @@ function home(editName){stopClock();app.classList.remove('wide');const log=loadL
     <div class="timeset"><span>Time limit</span><div class="seg" id="seg">${[0,15,20,25].map(m=>`<button data-m="${m}" aria-pressed="${getLimit()===m}">${m?m+' min':'Off'}</button>`).join('')}</div></div>
     <div class="btnrow"><button class="btn" id="startDaily">${done?'Do it again':'Start'}</button></div>
   </section>
+  ${(()=>{const notes=loadNotes(),by={};notes.forEach(n=>{by[n.q.topic]=(by[n.q.topic]||0)+1});
+    return `<section class="panel notes"><h2>My mistake notebook</h2>${notes.length?`<div><span class="notecount">${notes.length}</span> question${notes.length>1?'s':''} to try again</div>
+      <div class="mixline">${Object.entries(by).map(([k,v])=>`<span class="chip">${TOPICS[k]?TOPICS[k].name:k} ${v}</span>`).join('')}</div>
+      <p>Get one right on the first try and it leaves the notebook.</p>
+      <div class="btnrow"><button class="btn" id="notesb">Practise ${Math.min(10,notes.length)} mistake${Math.min(10,notes.length)>1?'s':''}</button></div>`
+      :`<p>No mistakes saved right now. Questions you miss will be kept here so you can try them again.</p>`}</section>`})()}
   <section><div class="section-label">Extra practice</div>
     <div class="topics">${Object.entries(TOPICS).map(([k,t])=>`<button class="topic" data-t="${k}"><span class="ticon" style="background:var(--${t.color})">${t.icon}</span><span><b>${t.name}</b><small>${t.sub}</small></span></button>`).join('')}</div></section>
   <section class="panel calbox"><h2>My ${monthName} stamps</h2>
@@ -634,6 +658,7 @@ function home(editName){stopClock();app.classList.remove('wide');const log=loadL
   const cn=document.getElementById('chname');if(cn)cn.onclick=()=>home(true);
   app.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{setLimit(+b.dataset.m);
     app.querySelectorAll('#seg button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))});
+  const nb=document.getElementById('notesb');if(nb)nb.onclick=()=>start(loadNotes().slice(0,10).map(n=>({...n.q,noteId:n.id})),'notes');
   document.getElementById('startDaily').onclick=()=>start(dailySet(today),'daily');
   app.querySelectorAll('.topic').forEach(b=>b.onclick=()=>start(topicSet(b.dataset.t),b.dataset.t));
 }
@@ -691,7 +716,7 @@ function yourAns(q){const v=id=>{const el=document.getElementById(id);return el?
   if(q.kind==='cmp')return `${q.fa} ${S.pick} ${q.fb}`;
   if(q.kind==='choice')return S.pick;return v('ax')}
 function bindSelf(q){const go=document.getElementById('go');
-  const done=yes=>{if(S.locked)return;S.res.push({q,r:yes?'first':'miss',you:yourAns(q)});document.getElementById('selfY').disabled=true;document.getElementById('selfN').disabled=true;go.hidden=false;lock([],'')};
+  const done=yes=>{if(S.locked)return;record(q,yes?'first':'miss',yourAns(q));document.getElementById('selfY').disabled=true;document.getElementById('selfN').disabled=true;go.hidden=false;lock([],'')};
   document.getElementById('selfY').onclick=()=>done(true);document.getElementById('selfN').onclick=()=>done(false)}
 function review(j){const q=S.qs[j],t=S.qs.length,r=S.res.find(x=>x.q===q)||{};
   const lab={first:'★ Right on the first try',second:'✓ Right on the second try',miss:'✗ Not right this time'};
@@ -762,13 +787,13 @@ function act(){const q=S.qs[S.i];
   if(g.empty){nud.hidden=false;nud.textContent=g.msg||'Type your answer first.';return}
   nud.hidden=true;const inputs=app.querySelectorAll('input.n');
   const hb=document.getElementById('hintb');if(hb)hb.hidden=true;const sk=document.getElementById('skipb');if(sk)sk.hidden=true;
-  if(g.ok){S.res.push({q,r:S.tries?'second':'first',you:yourAns(q)});lock(inputs,'ok');confetti();
+  if(g.ok){record(q,S.tries?'second':'first',yourAns(q));lock(inputs,'ok');confetti();
     fb.innerHTML=`<div class="fb good"><h3>${S.tries?'Got it!':pick(['Correct!','Yes! Well done.','Great work!','Exactly right!','You got it!','Brilliant!'])}</h3>${g.note?`<div>${g.note}</div>`:''}<div class="work">${q.sol}</div></div>`;return}
   if(S.tries===0){S.tries=1;inputs.forEach(i=>i.classList.add('no'));
     fb.innerHTML=`<div class="fb try"><h3>Not quite. Try once more.</h3><div>${g.msg?g.msg+' ':''}${q.hint}</div></div>`;
     inputs.forEach(i=>i.addEventListener('input',()=>i.classList.remove('no'),{once:true}));return}
-  S.res.push({q,r:'miss',you:yourAns(q)});lock(inputs,'no');
-  fb.innerHTML=`<div class="fb bad"><h3>Let’s look at how it works.</h3><div class="work">${q.sol}</div></div>`}
+  record(q,'miss',yourAns(q));lock(inputs,'no');
+  fb.innerHTML=`<div class="fb bad"><h3>Let’s look at how it works.</h3><div class="work">${q.sol}</div><div class="saved">♥ Saved to your mistake notebook. You can try it again later.</div></div>`}
 function lock(inputs,c){S.locked=true;inputs.forEach(i=>{i.readOnly=true;i.classList.remove('no');if(c)i.classList.add(c)});
   const go=document.getElementById('go');go.textContent=S.i+1>=S.qs.length?'See results':'Next';go.focus({preventScroll:true})}
 
@@ -818,9 +843,10 @@ function results(){const used=Math.min(elapsed(),S.limit||Infinity);stopClock();
   const msg=c===t?'Perfect score!':c/t>=.8?'Strong work today.':c/t>=.5?'Good effort. Practice makes it stick.':'Keep going. Every try helps your brain grow.';
   const mk={first:'★',second:'✓',miss:'✗',skip:'–'};if(c/t>=.8)setTimeout(()=>{const r=app.querySelector('.results');if(r){r.classList.add('card');confetti()}},300);
   app.innerHTML=`
-  <section class="panel results"><div class="tag" style="background:var(--t-geo)">${S.mode==='daily'?'Today’s workout':S.mode==='retry'?'Second chance':TOPICS[S.mode].name+' practice'}</div>
+  <section class="panel results"><div class="tag" style="background:var(--t-geo)">${S.mode==='daily'?'Today’s workout':S.mode==='retry'?'Second chance':S.mode==='notes'?'Mistake notebook':TOPICS[S.mode].name+' practice'}</div>
     ${S.timeUp?`<div class="timesup">Time’s up! ${sk} question${sk===1?'':'s'} not reached.</div>`:''}
     <div class="rtop">${MASCOT}<div><div class="score">${c}<small> / ${t}</small></div><h2>${msg}</h2></div></div>
+    ${S.mode==='notes'?`<div class="todaynote yes">You cleared ${S.cleared||0} question${S.cleared===1?'':'s'} from your notebook. ${loadNotes().length} left.</div>`:(S.mode!=='retry'&&S.res.some(x=>x.r==='miss'||x.r==='second')?`<div class="todaynote no">♥ ${S.res.filter(x=>x.r==='miss'||x.r==='second').length} question${S.res.filter(x=>x.r==='miss'||x.r==='second').length>1?'s':''} saved to your mistake notebook.</div>`:'')}
     ${S.mode==='daily'?`<div class="todaynote yes">Today is marked on your calendar ✓ ${streak(loadLog())>1?`${streak(loadLog())} days in a row!`:''}</div>`:''}
     <div class="date">Time: ${mmss(used)}${S.limit?` of ${mmss(S.limit)}`:''}</div>
     <div class="key"><span>★ right first try (${f})</span><span>✓ right on second try (${c-f})</span><span>✗ missed (${t-c-sk})</span>${sk?`<span>– not reached (${sk})</span>`:''}</div>
